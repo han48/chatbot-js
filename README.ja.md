@@ -6,6 +6,8 @@
 
 **デモ:** 任意のスタティックサーバーで`index.html`を開いてください。
 
+Online demo: [huggingface](https://huggingface.co/spaces/mr4/chatbot-js)
+
 ## 機能
 
 - 💬 3言語対応: ベトナム語、英語、日本語
