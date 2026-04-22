@@ -1,0 +1,134 @@
+{
+    "vi": {
+        "title": "📖 Hướng dẫn sử dụng",
+        "sections": [
+            {
+                "icon": "💬",
+                "heading": "Cách chat với Hikari",
+                "items": [
+                    "Gõ tin nhắn vào ô bên dưới rồi nhấn <b>Gửi</b> hoặc phím <b>Enter</b>.",
+                    "Hikari hỗ trợ 3 ngôn ngữ: Tiếng Việt, English, 日本語. Chọn ngôn ngữ ở góc trên bên phải.",
+                    "Bạn có thể hỏi bất cứ điều gì — chào hỏi, kiến thức, tính toán, chuyển đổi đơn vị, xem giờ..."
+                ]
+            },
+            {
+                "icon": "🤖",
+                "heading": "Cách Hikari phản hồi",
+                "items": [
+                    "Hikari so khớp tin nhắn của bạn với các <b>trigger</b> đã được lập trình sẵn.",
+                    "Mỗi phản hồi kèm <b>Confidence</b> (độ tin cậy) cho biết mức độ khớp.",
+                    "<span class=\"help-dot green\"></span> <b>Xanh lá (≥50%)</b>: Hikari tự tin với câu trả lời.",
+                    "<span class=\"help-dot red\"></span> <b>Đỏ (&lt;50%)</b>: Hikari không chắc chắn, sẽ thử hỏi dịch vụ bổ sung."
+                ]
+            },
+            {
+                "icon": "⚡",
+                "heading": "Các lệnh đặc biệt",
+                "items": [
+                    "<span class=\"help-example\">tính 2 + 3</span> — Tính toán biểu thức toán học",
+                    "<span class=\"help-example\">đổi 5 km sang m</span> — Chuyển đổi đơn vị",
+                    "<span class=\"help-example\">mấy giờ</span> — Xem giờ hiện tại",
+                    "<span class=\"help-example\">hôm nay ngày mấy</span> — Xem ngày tháng",
+                    "<span class=\"help-example\">tìm kiếm ...</span> — Tìm câu trả lời phù hợp nhất"
+                ]
+            },
+            {
+                "icon": "📋",
+                "heading": "Mẹo sử dụng",
+                "items": [
+                    "Nhấn nút <b>📋</b> để xem danh sách tất cả câu hỏi Hikari có thể trả lời.",
+                    "Nhấn nút <b>🔧</b> để xem danh sách các chức năng mở rộng (Object Macros).",
+                    "Nếu Hikari không hiểu, hãy thử diễn đạt lại câu hỏi đơn giản hơn."
+                ]
+            }
+        ]
+    },
+    "en": {
+        "title": "📖 User Guide",
+        "sections": [
+            {
+                "icon": "💬",
+                "heading": "How to chat with Hikari",
+                "items": [
+                    "Type your message in the input box below and press <b>Send</b> or hit <b>Enter</b>.",
+                    "Hikari supports 3 languages: Tiếng Việt, English, 日本語. Select from the dropdown in the top right.",
+                    "You can ask anything — greetings, knowledge, math, unit conversion, time..."
+                ]
+            },
+            {
+                "icon": "🤖",
+                "heading": "How Hikari responds",
+                "items": [
+                    "Hikari matches your message against pre-programmed <b>triggers</b>.",
+                    "Each response includes a <b>Confidence</b> score showing how well it matched.",
+                    "<span class=\"help-dot green\"></span> <b>Green (≥50%)</b>: Hikari is confident in the answer.",
+                    "<span class=\"help-dot red\"></span> <b>Red (&lt;50%)</b>: Hikari is unsure and will try a fallback service."
+                ]
+            },
+            {
+                "icon": "⚡",
+                "heading": "Special commands",
+                "items": [
+                    "<span class=\"help-example\">calculate 2 + 3</span> — Evaluate math expressions",
+                    "<span class=\"help-example\">convert 5 km to m</span> — Convert units",
+                    "<span class=\"help-example\">what time is it</span> — Check current time",
+                    "<span class=\"help-example\">what date is it</span> — Check today's date",
+                    "<span class=\"help-example\">search ...</span> — Find the best matching answer"
+                ]
+            },
+            {
+                "icon": "📋",
+                "heading": "Tips",
+                "items": [
+                    "Click <b>📋</b> to see all questions Hikari can answer.",
+                    "Click <b>🔧</b> to see available extended features (Object Macros).",
+                    "If Hikari doesn't understand, try rephrasing your question more simply."
+                ]
+            }
+        ]
+    },
+    "ja": {
+        "title": "📖 使い方ガイド",
+        "sections": [
+            {
+                "icon": "💬",
+                "heading": "ひかりとのチャット方法",
+                "items": [
+                    "下の入力欄にメッセージを入力し、<b>送信</b>ボタンまたは<b>Enter</b>キーを押してください。",
+                    "ひかりは3つの言語に対応：Tiếng Việt、English、日本語。右上のドロップダウンで選択できます。",
+                    "何でも聞いてください — 挨拶、知識、計算、単位変換、時間確認..."
+                ]
+            },
+            {
+                "icon": "🤖",
+                "heading": "ひかりの応答方法",
+                "items": [
+                    "ひかりはメッセージをプログラムされた<b>トリガー</b>と照合します。",
+                    "各応答には一致度を示す<b>Confidence</b>（信頼度）スコアが付きます。",
+                    "<span class=\"help-dot green\"></span> <b>緑（≥50%）</b>：ひかりは回答に自信があります。",
+                    "<span class=\"help-dot red\"></span> <b>赤（&lt;50%）</b>：ひかりは不確かで、フォールバックサービスを試みます。"
+                ]
+            },
+            {
+                "icon": "⚡",
+                "heading": "特別なコマンド",
+                "items": [
+                    "<span class=\"help-example\">計算 2 + 3</span> — 数式を計算",
+                    "<span class=\"help-example\">変換 5 km を m</span> — 単位を変換",
+                    "<span class=\"help-example\">今何時</span> — 現在の時刻を確認",
+                    "<span class=\"help-example\">今日は何日</span> — 今日の日付を確認",
+                    "<span class=\"help-example\">検索 ...</span> — 最適な回答を検索"
+                ]
+            },
+            {
+                "icon": "📋",
+                "heading": "ヒント",
+                "items": [
+                    "<b>📋</b>ボタンでひかりが答えられる質問一覧を表示。",
+                    "<b>🔧</b>ボタンで拡張機能（Object Macros）一覧を表示。",
+                    "ひかりが理解できない場合は、より簡単な表現で質問してみてください。"
+                ]
+            }
+        ]
+    }
+}

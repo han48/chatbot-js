@@ -1,0 +1,15 @@
+{
+  "name": "hikari-chatbot",
+  "version": "1.0.0",
+  "description": "Hikari - A static chatbot using RiveScript",
+  "scripts": {
+    "preprocess": "node scripts/preprocess.js",
+    "test": "vitest --run"
+  },
+  "devDependencies": {
+    "fast-check": "^4.1.1",
+    "jsdom": "^26.1.0",
+    "rivescript": "^2.2.1",
+    "vitest": "^3.2.1"
+  }
+}

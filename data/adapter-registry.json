@@ -1,0 +1,72 @@
+{
+    "best_match": {
+        "name": { "vi": "Best Match", "en": "Best Match", "ja": "ベストマッチ" },
+        "description": {
+            "vi": "So khớp độ tương đồng văn bản để tìm câu trả lời phù hợp nhất từ tập dữ liệu Q&A",
+            "en": "Text similarity matching to find the best answer from Q&A dataset",
+            "ja": "Q&Aデータセットからテキスト類似度マッチングで最適な回答を検索"
+        },
+        "callSyntax": "<call>best_match <star></call>",
+        "active": true
+    },
+    "logic_adapter": {
+        "name": { "vi": "Logic Adapter (Dispatcher)", "en": "Logic Adapter (Dispatcher)", "ja": "ロジックアダプター（ディスパッチャー）" },
+        "description": {
+            "vi": "Điều phối các adapter khác và chọn phản hồi tốt nhất theo độ ưu tiên",
+            "en": "Coordinates other adapters and selects the best response by priority",
+            "ja": "他のアダプターを調整し、優先度に基づいて最適な応答を選択"
+        },
+        "callSyntax": "<call>logic_adapter <star></call>",
+        "active": true
+    },
+    "mathematical_evaluation": {
+        "name": { "vi": "Tính toán", "en": "Math Evaluation", "ja": "数学計算" },
+        "description": {
+            "vi": "Tính toán biểu thức toán học (cộng, trừ, nhân, chia)",
+            "en": "Evaluate mathematical expressions (add, subtract, multiply, divide)",
+            "ja": "数式の計算（足し算、引き算、掛け算、割り算）"
+        },
+        "callSyntax": "<call>mathematical_evaluation <star></call>",
+        "active": true
+    },
+    "specific_response": {
+        "name": { "vi": "Phản hồi cụ thể", "en": "Specific Response", "ja": "特定応答" },
+        "description": {
+            "vi": "Trả về phản hồi chính xác cho các câu hỏi được cấu hình trước (exact match)",
+            "en": "Returns exact responses for pre-configured questions (exact match)",
+            "ja": "事前設定された質問に対する正確な応答を返す（完全一致）"
+        },
+        "callSyntax": "<call>specific_response <star></call>",
+        "active": true
+    },
+    "time_adapter": {
+        "name": { "vi": "Thời gian", "en": "Time", "ja": "時間" },
+        "description": {
+            "vi": "Trả lời câu hỏi về thời gian, ngày tháng, thứ trong tuần",
+            "en": "Answer questions about time, date, and day of the week",
+            "ja": "時間、日付、曜日に関する質問に回答"
+        },
+        "callSyntax": "<call>time_adapter <star></call>",
+        "active": true
+    },
+    "unit_conversion": {
+        "name": { "vi": "Chuyển đổi đơn vị", "en": "Unit Conversion", "ja": "単位変換" },
+        "description": {
+            "vi": "Chuyển đổi đơn vị đo lường (chiều dài, khối lượng, nhiệt độ)",
+            "en": "Convert measurement units (length, mass, temperature)",
+            "ja": "測定単位の変換（長さ、質量、温度）"
+        },
+        "callSyntax": "<call>unit_conversion <star></call>",
+        "active": true
+    },
+    "web_search": {
+        "name": { "vi": "Tìm kiếm Web", "en": "Web Search", "ja": "ウェブ検索" },
+        "description": {
+            "vi": "Tìm kiếm Google và trả về kết quả (cần cấu hình API key)",
+            "en": "Search Google and return results (requires API key configuration)",
+            "ja": "Google検索を実行し結果を返す（APIキーの設定が必要）"
+        },
+        "callSyntax": "<call>web_search <star></call>",
+        "active": true
+    }
+}

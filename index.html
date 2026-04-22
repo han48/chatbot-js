@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hikari Chatbot</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌟</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <h1>Hikari</h1>
+            <div class="header-controls">
+                <button id="help-button" title="Hướng dẫn sử dụng">❓</button>
+                <button id="rules-button" title="Xem danh sách rules">📋</button>
+                <button id="macros-button" title="Xem danh sách Object Macros">🔧</button>
+                <select id="language-selector">
+                    <option value="vi" selected>Tiếng Việt</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                </select>
+            </div>
+        </header>
+        <div id="rules-panel" class="slide-panel hidden">
+            <div class="slide-panel-header">
+                <h3 id="rules-title">📋 Các câu hỏi Hikari có thể trả lời</h3>
+                <button class="slide-panel-close" onclick="toggleRulesPanel()" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="slide-panel-body">
+                <ul id="rules-list" class="rules-list"></ul>
+            </div>
+        </div>
+        <div id="macros-panel" class="slide-panel hidden">
+            <div class="slide-panel-header">
+                <h3 id="macros-title">🔧 Object Macros (Subroutines)</h3>
+                <button class="slide-panel-close" onclick="toggleMacrosPanel()" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="slide-panel-body">
+                <ul id="macros-list" class="macros-list"></ul>
+            </div>
+        </div>
+        <div id="message-display" class="message-display"></div>
+        <div class="input-area">
+            <input type="text" id="message-input" placeholder="Nhập tin nhắn...">
+            <button id="send-button">Gửi</button>
+        </div>
+    </div>
+    <!-- Help Dialog -->
+    <div id="help-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="help-dialog-title">
+        <div class="help-dialog">
+            <div class="help-dialog-header">
+                <h2 id="help-dialog-title">📖 Hướng dẫn sử dụng</h2>
+                <button id="help-close-button" class="help-close-button" aria-label="Đóng">&times;</button>
+            </div>
+            <div id="help-dialog-body" class="help-dialog-body">
+                <!-- Nội dung được render bởi JS theo ngôn ngữ -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
+    <script src="brain.js"></script>
+    <script src="data-loader.js"></script>
+    <script src="adapters/text-similarity.js"></script>
+    <script src="adapters/specific-response.js"></script>
+    <script src="adapters/time-adapter.js"></script>
+    <script src="adapters/math-adapter.js"></script>
+    <script src="adapters/unit-conversion.js"></script>
+    <script src="adapters/best-match.js"></script>
+    <script src="adapters/logic-dispatcher.js"></script>
+    <script src="adapters/web-search.js"></script>
+    <script src="adapters/adapter-registry.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

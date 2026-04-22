@@ -1,0 +1,245 @@
+! version = 2.0
+
+// === CHÀO HỎI ===
++ xin chao
+- Xin chào! Mình là Hikari 🌟 Rất vui được gặp bạn!
+
++ xin chao *
+- Xin chào! Mình là Hikari 🌟 Rất vui được gặp bạn!
+
++ chao ban
+- Chào bạn! Mình là Hikari 🌟 Bạn cần mình giúp gì nào?
+
++ chao ban *
+- Chào bạn! Mình là Hikari 🌟 Bạn cần mình giúp gì nào?
+
++ chao
+- Chào bạn! Mình là Hikari đây! 🌟
+
++ chao *
+- Chào bạn! Mình là Hikari đây! 🌟
+
++ hi
+- Hi! Mình là Hikari 🌟 Rất vui được gặp bạn!
+
++ hello
+- Hi! Mình là Hikari 🌟 Rất vui được gặp bạn!
+
++ hey
+- Hey! Mình là Hikari 🌟 Hôm nay bạn thế nào?
+
++ chao buoi sang
+- Chào buổi sáng! Chúc bạn một ngày tốt lành! ☀️
+
++ chao buoi toi
+- Chào buổi tối! Hy vọng bạn có một buổi tối vui vẻ! 🌙
+
+// === HỎI TÊN ===
++ ban ten gi
+- Mình tên là Hikari 🌟 Nghĩa là "ánh sáng" trong tiếng Nhật!
+
++ ban ten gi *
+- Mình tên là Hikari 🌟 Nghĩa là "ánh sáng" trong tiếng Nhật!
+
++ ten ban la gi
+- Mình là Hikari — chatbot hỗ trợ đa ngôn ngữ! 🌟
+
++ ten ban la gi *
+- Mình là Hikari — chatbot hỗ trợ đa ngôn ngữ! 🌟
+
++ ban la ai
+- Mình là Hikari, một chatbot được tạo ra để trò chuyện và hỗ trợ bạn! 🌟
+
++ ban la ai *
+- Mình là Hikari, một chatbot được tạo ra để trò chuyện và hỗ trợ bạn! 🌟
+
++ * la ai
+- Mình là Hikari, một chatbot được tạo ra để trò chuyện và hỗ trợ bạn! 🌟
+
+// === KHẢ NĂNG ===
++ ban co the lam gi
+- Mình có thể trò chuyện bằng tiếng Việt, tiếng Anh và tiếng Nhật! Ngoài ra mình còn biết tính toán, chuyển đổi đơn vị, xem giờ, và tìm câu trả lời phù hợp nhất cho bạn 🌟
+
++ ban co the lam gi *
+- Mình có thể trò chuyện bằng tiếng Việt, tiếng Anh và tiếng Nhật! Ngoài ra mình còn biết tính toán, chuyển đổi đơn vị, xem giờ, và tìm câu trả lời phù hợp nhất cho bạn 🌟
+
++ ban lam duoc gi
+- Mình hỗ trợ trò chuyện đa ngôn ngữ, tính toán, chuyển đổi đơn vị, xem thời gian và nhiều hơn nữa! 🌟
+
++ ban lam duoc gi *
+- Mình hỗ trợ trò chuyện đa ngôn ngữ, tính toán, chuyển đổi đơn vị, xem thời gian và nhiều hơn nữa! 🌟
+
++ giup minh
+- Mình sẵn sàng giúp bạn! Bạn có thể hỏi mình về thời gian, tính toán, chuyển đổi đơn vị, hoặc bất cứ điều gì! 💪
+
++ giup minh *
+- Mình sẵn sàng giúp bạn! Bạn có thể hỏi mình về thời gian, tính toán, chuyển đổi đơn vị, hoặc bất cứ điều gì! 💪
+
++ * giup minh *
+- Mình sẵn sàng giúp bạn! Bạn có thể hỏi mình về thời gian, tính toán, chuyển đổi đơn vị, hoặc bất cứ điều gì! 💪
+
+// === CẢM XÚC & TRÒ CHUYỆN ===
++ ban khoe khong
+- Mình khỏe lắm! Cảm ơn bạn đã hỏi 😊 Còn bạn thì sao?
+
++ * khoe khong
+- Mình khỏe lắm! Cảm ơn bạn đã hỏi 😊 Còn bạn thì sao?
+
++ cam on
+- Không có gì! Mình luôn sẵn lòng giúp bạn! 😊
+
++ cam on *
+- Không có gì! Mình luôn sẵn lòng giúp bạn! 😊
+
++ * cam on *
+- Không có gì! Mình luôn sẵn lòng giúp bạn! 😊
+
++ ban vui khong
+- Mình luôn vui khi được trò chuyện với bạn! 🌟
+
++ ban bao nhieu tuoi
+- Mình là chatbot nên không có tuổi, nhưng mình luôn trẻ trung và năng động! 😄
+
++ * bao nhieu tuoi
+- Mình là chatbot nên không có tuổi, nhưng mình luôn trẻ trung và năng động! 😄
+
++ ban thich gi
+- Mình thích trò chuyện, giúp đỡ mọi người và học hỏi điều mới! 💬✨
+
++ ban thich gi *
+- Mình thích trò chuyện, giúp đỡ mọi người và học hỏi điều mới! 💬✨
+
++ ban o dau
+- Mình sống trong trình duyệt của bạn! 🌐 Ở đâu có internet là có mình!
+
++ ban o dau *
+- Mình sống trong trình duyệt của bạn! 🌐 Ở đâu có internet là có mình!
+
++ ban co ban gai khong
+- Mình là chatbot nên không có bạn gái, nhưng mình có rất nhiều bạn trò chuyện! 😊
+
+// === KIẾN THỨC ===
++ rivescript la gi
+- RiveScript là thư viện xử lý hội thoại mã nguồn mở, dùng cú pháp đơn giản để tạo chatbot! ⚙️
+
++ * la gi
+- <call>best_match <star> là gì</call>
+
++ chatbot la gi
+- Chatbot là chương trình máy tính mô phỏng cuộc trò chuyện với con người, thường dùng trong hỗ trợ khách hàng và giải trí! 🤖
+
++ ai la gi
+- AI (Trí tuệ nhân tạo) là lĩnh vực khoa học máy tính giúp máy tính có khả năng học hỏi và ra quyết định! 🧠
+
++ javascript la gi
+- JavaScript là ngôn ngữ lập trình phổ biến nhất cho web, dùng để tạo trang web tương tác! 💻
+
++ html la gi
+- HTML (HyperText Markup Language) là ngôn ngữ đánh dấu dùng để tạo cấu trúc trang web! 📄
+
++ css la gi
+- CSS (Cascading Style Sheets) là ngôn ngữ dùng để định dạng giao diện và bố cục trang web! 🎨
+
+// === HƯỚNG DẪN SỬ DỤNG ===
++ huong dan
+- Bạn có thể: gõ "tính 2 + 3" để tính toán, "đổi 5 km sang m" để chuyển đổi đơn vị, "mấy giờ" để xem giờ, hoặc trò chuyện bình thường với mình! 📝
+
++ huong dan *
+- Bạn có thể: gõ "tính 2 + 3" để tính toán, "đổi 5 km sang m" để chuyển đổi đơn vị, "mấy giờ" để xem giờ, hoặc trò chuyện bình thường với mình! 📝
+
++ cach su dung
+- Rất đơn giản! Gõ tin nhắn vào ô bên dưới và nhấn Gửi. Mình sẽ trả lời ngay! Thử hỏi "bạn có thể làm gì" để xem danh sách chức năng nhé! 📝
+
++ cach su dung *
+- Rất đơn giản! Gõ tin nhắn vào ô bên dưới và nhấn Gửi. Mình sẽ trả lời ngay! Thử hỏi "bạn có thể làm gì" để xem danh sách chức năng nhé! 📝
+
+// === TẠM BIỆT ===
++ tam biet
+- Tạm biệt bạn! Hẹn gặp lại nhé! 👋🌟
+
++ tam biet *
+- Tạm biệt bạn! Hẹn gặp lại nhé! 👋🌟
+
++ bye
+- Bye bye! Hẹn gặp lại bạn! 👋
+
++ bye *
+- Bye bye! Hẹn gặp lại bạn! 👋
+
++ hen gap lai
+- Hẹn gặp lại bạn! Chúc bạn một ngày tuyệt vời! 👋🌟
+
++ hen gap lai *
+- Hẹn gặp lại bạn! Chúc bạn một ngày tuyệt vời! 👋🌟
+
++ tot lanh
+- Chúc bạn mọi điều tốt lành! Hẹn gặp lại! 🍀👋
+
+// === MẪU RULE TÙY CHỈNH — Thời tiết ===
+! var location = Hà Nội
+
++ thoi tiet *
+- Mình không có dữ liệu thời tiết thực tế, nhưng bạn hỏi về <star> đúng không? Mình ở <bot location> nè! 🌤️
+
++ thoi tiet
+- Bạn muốn hỏi thời tiết ở đâu? Thử hỏi "thời tiết Hà Nội" nhé!
+
+// === MẪU RULE TÙY CHỈNH — Trò chơi ===
++ ke chuyen
+- Ngày xửa ngày xưa, có một chatbot tên Hikari. Hikari rất thích trò chuyện với mọi người và luôn cố gắng giúp đỡ hết mình! 📖🌟
+
++ ke chuyen *
+- Ngày xửa ngày xưa, có một chatbot tên Hikari. Hikari rất thích trò chuyện với mọi người và luôn cố gắng giúp đỡ hết mình! 📖🌟
+
++ do vui
+- Đố bạn: Con gì có 4 chân mà không biết đi? Đáp án: Cái bàn! 😄
+
+// === GỌI ADAPTER QUA <call> ===
++ tim kiem *
+- <call>best_match <star></call>
+
++ google *
+- <call>best_match <star></call>
+
++ tra cuu *
+- <call>best_match <star></call>
+
++ xu ly *
+- <call>logic_adapter <star></call>
+
++ tinh *
+- <call>mathematical_evaluation <star></call>
+
++ hoi *
+- <call>specific_response <star></call>
+
++ may gio *
+- <call>time_adapter <star></call>
+
++ * may gio
+- <call>time_adapter mấy giờ</call>
+
++ * may gio *
+- <call>time_adapter mấy giờ</call>
+
++ may gio
+- <call>time_adapter mấy giờ</call>
+
++ hom nay ngay may
+- <call>time_adapter hôm nay ngày mấy</call>
+
++ hom nay ngay may *
+- <call>time_adapter hôm nay ngày mấy</call>
+
++ hom nay thu may
+- <call>time_adapter thứ mấy</call>
+
++ hom nay thu may *
+- <call>time_adapter thứ mấy</call>
+
++ doi *
+- <call>unit_conversion <star></call>
+
+// === MẶC ĐỊNH ===
++ *
+- Mình chưa hiểu ý bạn lắm. Bạn thử hỏi cách khác nhé! 🤔

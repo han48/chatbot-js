@@ -1,0 +1,3546 @@
+{
+  "version": 1776851199033,
+  "langs": {
+    "vi": {
+      "idf": {
+        "hikari": 3.4159137783010487,
+        "la": 2.317301489632939,
+        "gi": 2.1349799328389847,
+        "ai": 3.2335922215070942,
+        "tao": 4.332204510175204,
+        "ra": 4.332204510175204,
+        "ban": 2.0296194171811583,
+        "co": 3.4159137783010487,
+        "the": 4.332204510175204,
+        "giup": 4.332204510175204,
+        "biet": 4.332204510175204,
+        "noi": 4.332204510175204,
+        "may": 4.332204510175204,
+        "ngon": 3.9267394020670396,
+        "ngu": 3.9267394020670396,
+        "nghia": 4.332204510175204,
+        "bao": 3.9267394020670396,
+        "nhieu": 3.9267394020670396,
+        "tuoi": 3.9267394020670396,
+        "thich": 4.332204510175204,
+        "cach": 4.332204510175204,
+        "su": 4.332204510175204,
+        "dung": 4.332204510175204,
+        "chatbot": 3.9267394020670396,
+        "rivescript": 4.332204510175204,
+        "thong": 5.02535169073515,
+        "minh": 4.332204510175204,
+        "khong": 3.4159137783010487,
+        "lam": 3.9267394020670396,
+        "sao": 5.02535169073515,
+        "de": 5.02535169073515,
+        "doi": 5.02535169073515,
+        "phien": 5.02535169073515,
+        "duoc": 4.332204510175204,
+        "xin": 5.02535169073515,
+        "chao": 3.4159137783010487,
+        "hi": 5.02535169073515,
+        "hello": 5.02535169073515,
+        "hey": 5.02535169073515,
+        "buoi": 4.332204510175204,
+        "sang": 5.02535169073515,
+        "toi": 5.02535169073515,
+        "ten": 4.332204510175204,
+        "khoe": 4.332204510175204,
+        "cam": 5.02535169073515,
+        "on": 5.02535169073515,
+        "vui": 4.332204510175204,
+        "o": 5.02535169073515,
+        "dau": 5.02535169073515,
+        "gai": 5.02535169073515,
+        "javascript": 5.02535169073515,
+        "html": 5.02535169073515,
+        "css": 5.02535169073515,
+        "huong": 5.02535169073515,
+        "dan": 5.02535169073515,
+        "tam": 5.02535169073515,
+        "bye": 5.02535169073515,
+        "hen": 5.02535169073515,
+        "gap": 5.02535169073515,
+        "lai": 5.02535169073515,
+        "tot": 5.02535169073515,
+        "lanh": 5.02535169073515,
+        "thoi": 5.02535169073515,
+        "tiet": 5.02535169073515,
+        "ke": 5.02535169073515,
+        "chuyen": 5.02535169073515,
+        "do": 5.02535169073515
+      },
+      "statements": [
+        {
+          "source": "qa",
+          "originalText": "hikari là gì",
+          "answer": "Hikari là chatbot thông minh hỗ trợ đa ngôn ngữ! 🌟",
+          "tokens": [
+            "hikari",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "hikari": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "hikari": 3.4159137783010487,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 4.6472026476437565
+        },
+        {
+          "source": "qa",
+          "originalText": "ai tạo ra bạn",
+          "answer": "Mình được tạo ra bởi một nhà phát triển đam mê chatbot!",
+          "tokens": [
+            "ai",
+            "tao",
+            "ra",
+            "ban"
+          ],
+          "tf": {
+            "ai": 1,
+            "tao": 1,
+            "ra": 1,
+            "ban": 1
+          },
+          "synGroups": [
+            3,
+            10
+          ],
+          "tfidf": {
+            "ai": 3.2335922215070942,
+            "tao": 4.332204510175204,
+            "ra": 4.332204510175204,
+            "ban": 2.0296194171811583
+          },
+          "magnitude": 7.218827153323089
+        },
+        {
+          "source": "qa",
+          "originalText": "bạn có thể giúp gì",
+          "answer": "Mình có thể trò chuyện, tính toán, chuyển đổi đơn vị, xem giờ và tìm câu trả lời cho bạn! 🌟",
+          "tokens": [
+            "ban",
+            "co",
+            "the",
+            "giup",
+            "gi"
+          ],
+          "tf": {
+            "ban": 1,
+            "co": 1,
+            "the": 1,
+            "giup": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            4,
+            11
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "co": 3.4159137783010487,
+            "the": 4.332204510175204,
+            "giup": 4.332204510175204,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 7.60801899767447
+        },
+        {
+          "source": "qa",
+          "originalText": "bạn biết nói mấy ngôn ngữ",
+          "answer": "Mình biết nói 3 ngôn ngữ: tiếng Việt, tiếng Anh và tiếng Nhật! 🌍",
+          "tokens": [
+            "ban",
+            "biet",
+            "noi",
+            "may",
+            "ngon",
+            "ngu"
+          ],
+          "tf": {
+            "ban": 1,
+            "biet": 1,
+            "noi": 1,
+            "may": 1,
+            "ngon": 1,
+            "ngu": 1
+          },
+          "synGroups": [
+            10
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "biet": 4.332204510175204,
+            "noi": 4.332204510175204,
+            "may": 4.332204510175204,
+            "ngon": 3.9267394020670396,
+            "ngu": 3.9267394020670396
+          },
+          "magnitude": 9.553109828534243
+        },
+        {
+          "source": "qa",
+          "originalText": "hikari nghĩa là gì",
+          "answer": "Hikari (ひかり) có nghĩa là \"ánh sáng\" trong tiếng Nhật! ✨",
+          "tokens": [
+            "hikari",
+            "nghia",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "hikari": 1,
+            "nghia": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "hikari": 3.4159137783010487,
+            "nghia": 4.332204510175204,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 6.353305310328595
+        },
+        {
+          "source": "qa",
+          "originalText": "bạn bao nhiêu tuổi",
+          "answer": "Mình là chatbot nên không có tuổi, nhưng mình luôn trẻ trung! 😄",
+          "tokens": [
+            "ban",
+            "bao",
+            "nhieu",
+            "tuoi"
+          ],
+          "tf": {
+            "ban": 1,
+            "bao": 1,
+            "nhieu": 1,
+            "tuoi": 1
+          },
+          "synGroups": [
+            13
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "bao": 3.9267394020670396,
+            "nhieu": 3.9267394020670396,
+            "tuoi": 3.9267394020670396
+          },
+          "magnitude": 7.097689904034708
+        },
+        {
+          "source": "qa",
+          "originalText": "bạn thích gì",
+          "answer": "Mình thích trò chuyện và giúp đỡ mọi người! 💬",
+          "tokens": [
+            "ban",
+            "thich",
+            "gi"
+          ],
+          "tf": {
+            "ban": 1,
+            "thich": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11,
+            15
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "thich": 4.332204510175204,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.238844358272759
+        },
+        {
+          "source": "qa",
+          "originalText": "cách sử dụng chatbot",
+          "answer": "Bạn chỉ cần gõ tin nhắn và nhấn Gửi. Mình sẽ trả lời ngay! 📝",
+          "tokens": [
+            "cach",
+            "su",
+            "dung",
+            "chatbot"
+          ],
+          "tf": {
+            "cach": 1,
+            "su": 1,
+            "dung": 1,
+            "chatbot": 1
+          },
+          "synGroups": [
+            10,
+            16
+          ],
+          "tfidf": {
+            "cach": 4.332204510175204,
+            "su": 4.332204510175204,
+            "dung": 4.332204510175204,
+            "chatbot": 3.9267394020670396
+          },
+          "magnitude": 8.468959209117314
+        },
+        {
+          "source": "qa",
+          "originalText": "chatbot là gì",
+          "answer": "Chatbot là chương trình máy tính có thể trò chuyện với con người! 🤖",
+          "tokens": [
+            "chatbot",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "chatbot": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            10,
+            11
+          ],
+          "tfidf": {
+            "chatbot": 3.9267394020670396,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.034610991846938
+        },
+        {
+          "source": "qa",
+          "originalText": "rivescript là gì",
+          "answer": "RiveScript là thư viện xử lý hội thoại mà mình sử dụng làm engine! ⚙️",
+          "tokens": [
+            "rivescript",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "rivescript": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "rivescript": 4.332204510175204,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.356866754499553
+        },
+        {
+          "source": "qa",
+          "originalText": "bạn có thông minh không",
+          "answer": "Mình cố gắng thông minh nhất có thể để giúp bạn! 🧠",
+          "tokens": [
+            "ban",
+            "co",
+            "thong",
+            "minh",
+            "khong"
+          ],
+          "tf": {
+            "ban": 1,
+            "co": 1,
+            "thong": 1,
+            "minh": 1,
+            "khong": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "co": 3.4159137783010487,
+            "thong": 5.02535169073515,
+            "minh": 4.332204510175204,
+            "khong": 3.4159137783010487
+          },
+          "magnitude": 8.454492556843947
+        },
+        {
+          "source": "qa",
+          "originalText": "làm sao để đổi ngôn ngữ",
+          "answer": "Bạn có thể chọn ngôn ngữ từ menu dropdown ở góc trên bên phải! 🌐",
+          "tokens": [
+            "lam",
+            "sao",
+            "de",
+            "doi",
+            "ngon",
+            "ngu"
+          ],
+          "tf": {
+            "lam": 1,
+            "sao": 1,
+            "de": 1,
+            "doi": 1,
+            "ngon": 1,
+            "ngu": 1
+          },
+          "synGroups": [
+            9
+          ],
+          "tfidf": {
+            "lam": 3.9267394020670396,
+            "sao": 5.02535169073515,
+            "de": 5.02535169073515,
+            "doi": 5.02535169073515,
+            "ngon": 3.9267394020670396,
+            "ngu": 3.9267394020670396
+          },
+          "magnitude": 11.046281086499715
+        },
+        {
+          "source": "specific",
+          "originalText": "hikari là ai",
+          "answer": "Mình là Hikari, chatbot hỗ trợ đa ngôn ngữ! 🌟",
+          "tokens": [
+            "hikari",
+            "la",
+            "ai"
+          ],
+          "tf": {
+            "hikari": 1,
+            "la": 1,
+            "ai": 1
+          },
+          "synGroups": [
+            3,
+            10
+          ],
+          "tfidf": {
+            "hikari": 3.4159137783010487,
+            "la": 2.317301489632939,
+            "ai": 3.2335922215070942
+          },
+          "magnitude": 5.243517120181183
+        },
+        {
+          "source": "specific",
+          "originalText": "phiên bản",
+          "answer": "Hikari phiên bản 1.0 — sử dụng RiveScript engine.",
+          "tokens": [
+            "phien",
+            "ban"
+          ],
+          "tf": {
+            "phien": 1,
+            "ban": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "phien": 5.02535169073515,
+            "ban": 2.0296194171811583
+          },
+          "magnitude": 5.419733812114154
+        },
+        {
+          "source": "specific",
+          "originalText": "bạn nói được mấy ngôn ngữ",
+          "answer": "Mình hỗ trợ 3 ngôn ngữ: tiếng Việt, tiếng Anh và tiếng Nhật! 🌍",
+          "tokens": [
+            "ban",
+            "noi",
+            "duoc",
+            "may",
+            "ngon",
+            "ngu"
+          ],
+          "tf": {
+            "ban": 1,
+            "noi": 1,
+            "duoc": 1,
+            "may": 1,
+            "ngon": 1,
+            "ngu": 1
+          },
+          "synGroups": [
+            10
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "noi": 4.332204510175204,
+            "duoc": 4.332204510175204,
+            "may": 4.332204510175204,
+            "ngon": 3.9267394020670396,
+            "ngu": 3.9267394020670396
+          },
+          "magnitude": 9.553109828534243
+        },
+        {
+          "source": "specific",
+          "originalText": "ai tạo ra hikari",
+          "answer": "Hikari được tạo bởi một nhà phát triển đam mê chatbot và AI! 🚀",
+          "tokens": [
+            "ai",
+            "tao",
+            "ra",
+            "hikari"
+          ],
+          "tf": {
+            "ai": 1,
+            "tao": 1,
+            "ra": 1,
+            "hikari": 1
+          },
+          "synGroups": [
+            3,
+            10
+          ],
+          "tfidf": {
+            "ai": 3.2335922215070942,
+            "tao": 4.332204510175204,
+            "ra": 4.332204510175204,
+            "hikari": 3.4159137783010487
+          },
+          "magnitude": 7.724025985957252
+        },
+        {
+          "source": "specific",
+          "originalText": "hikari có nghĩa là gì",
+          "answer": "Hikari (ひかり) có nghĩa là \"ánh sáng\" trong tiếng Nhật! ✨",
+          "tokens": [
+            "hikari",
+            "co",
+            "nghia",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "hikari": 1,
+            "co": 1,
+            "nghia": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "hikari": 3.4159137783010487,
+            "co": 3.4159137783010487,
+            "nghia": 4.332204510175204,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 7.213387228413325
+        },
+        {
+          "source": "brain",
+          "originalText": "xin chao",
+          "answer": "Xin chào! Mình là Hikari 🌟 Rất vui được gặp bạn!",
+          "tokens": [
+            "xin",
+            "chao"
+          ],
+          "tf": {
+            "xin": 1,
+            "chao": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "xin": 5.02535169073515,
+            "chao": 3.4159137783010487
+          },
+          "magnitude": 6.0763991439306855
+        },
+        {
+          "source": "brain",
+          "originalText": "chao ban",
+          "answer": "Chào bạn! Mình là Hikari 🌟 Bạn cần mình giúp gì nào?",
+          "tokens": [
+            "chao",
+            "ban"
+          ],
+          "tf": {
+            "chao": 1,
+            "ban": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "chao": 3.4159137783010487,
+            "ban": 2.0296194171811583
+          },
+          "magnitude": 3.9733892232432666
+        },
+        {
+          "source": "brain",
+          "originalText": "chao",
+          "answer": "Chào bạn! Mình là Hikari đây! 🌟",
+          "tokens": [
+            "chao"
+          ],
+          "tf": {
+            "chao": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "chao": 3.4159137783010487
+          },
+          "magnitude": 3.4159137783010487
+        },
+        {
+          "source": "brain",
+          "originalText": "hi",
+          "answer": "Hi! Mình là Hikari 🌟 Rất vui được gặp bạn!",
+          "tokens": [
+            "hi"
+          ],
+          "tf": {
+            "hi": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "hi": 5.02535169073515
+          },
+          "magnitude": 5.02535169073515
+        },
+        {
+          "source": "brain",
+          "originalText": "hello",
+          "answer": "Hi! Mình là Hikari 🌟 Rất vui được gặp bạn!",
+          "tokens": [
+            "hello"
+          ],
+          "tf": {
+            "hello": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "hello": 5.02535169073515
+          },
+          "magnitude": 5.02535169073515
+        },
+        {
+          "source": "brain",
+          "originalText": "hey",
+          "answer": "Hey! Mình là Hikari 🌟 Hôm nay bạn thế nào?",
+          "tokens": [
+            "hey"
+          ],
+          "tf": {
+            "hey": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "hey": 5.02535169073515
+          },
+          "magnitude": 5.02535169073515
+        },
+        {
+          "source": "brain",
+          "originalText": "chao buoi sang",
+          "answer": "Chào buổi sáng! Chúc bạn một ngày tốt lành! ☀️",
+          "tokens": [
+            "chao",
+            "buoi",
+            "sang"
+          ],
+          "tf": {
+            "chao": 1,
+            "buoi": 1,
+            "sang": 1
+          },
+          "synGroups": [
+            0,
+            9
+          ],
+          "tfidf": {
+            "chao": 3.4159137783010487,
+            "buoi": 4.332204510175204,
+            "sang": 5.02535169073515
+          },
+          "magnitude": 7.4626149890198645
+        },
+        {
+          "source": "brain",
+          "originalText": "chao buoi toi",
+          "answer": "Chào buổi tối! Hy vọng bạn có một buổi tối vui vẻ! 🌙",
+          "tokens": [
+            "chao",
+            "buoi",
+            "toi"
+          ],
+          "tf": {
+            "chao": 1,
+            "buoi": 1,
+            "toi": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "chao": 3.4159137783010487,
+            "buoi": 4.332204510175204,
+            "toi": 5.02535169073515
+          },
+          "magnitude": 7.4626149890198645
+        },
+        {
+          "source": "brain",
+          "originalText": "ban ten gi",
+          "answer": "Mình tên là Hikari 🌟 Nghĩa là \"ánh sáng\" trong tiếng Nhật!",
+          "tokens": [
+            "ban",
+            "ten",
+            "gi"
+          ],
+          "tf": {
+            "ban": 1,
+            "ten": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            3,
+            11
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "ten": 4.332204510175204,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.238844358272759
+        },
+        {
+          "source": "brain",
+          "originalText": "ten ban la gi",
+          "answer": "Mình là Hikari — chatbot hỗ trợ đa ngôn ngữ! 🌟",
+          "tokens": [
+            "ten",
+            "ban",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "ten": 1,
+            "ban": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            3,
+            11
+          ],
+          "tfidf": {
+            "ten": 4.332204510175204,
+            "ban": 2.0296194171811583,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.728470686322953
+        },
+        {
+          "source": "brain",
+          "originalText": "ban la ai",
+          "answer": "Mình là Hikari, một chatbot được tạo ra để trò chuyện và hỗ trợ bạn! 🌟",
+          "tokens": [
+            "ban",
+            "la",
+            "ai"
+          ],
+          "tf": {
+            "ban": 1,
+            "la": 1,
+            "ai": 1
+          },
+          "synGroups": [
+            3,
+            10
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "la": 2.317301489632939,
+            "ai": 3.2335922215070942
+          },
+          "magnitude": 4.466022819852694
+        },
+        {
+          "source": "brain",
+          "originalText": "la ai",
+          "answer": "Mình là Hikari, một chatbot được tạo ra để trò chuyện và hỗ trợ bạn! 🌟",
+          "tokens": [
+            "la",
+            "ai"
+          ],
+          "tf": {
+            "la": 1,
+            "ai": 1
+          },
+          "synGroups": [
+            3,
+            10
+          ],
+          "tfidf": {
+            "la": 2.317301489632939,
+            "ai": 3.2335922215070942
+          },
+          "magnitude": 3.9781911528791856
+        },
+        {
+          "source": "brain",
+          "originalText": "ban co the lam gi",
+          "answer": "Mình có thể trò chuyện bằng tiếng Việt, tiếng Anh và tiếng Nhật! Ngoài ra mình còn biết tính toán, chuyển đổi đơn vị, xem giờ, và tìm câu trả lời phù hợp nhất cho bạn 🌟",
+          "tokens": [
+            "ban",
+            "co",
+            "the",
+            "lam",
+            "gi"
+          ],
+          "tf": {
+            "ban": 1,
+            "co": 1,
+            "the": 1,
+            "lam": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "co": 3.4159137783010487,
+            "the": 4.332204510175204,
+            "lam": 3.9267394020670396,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 7.384662448801508
+        },
+        {
+          "source": "brain",
+          "originalText": "ban lam duoc gi",
+          "answer": "Mình hỗ trợ trò chuyện đa ngôn ngữ, tính toán, chuyển đổi đơn vị, xem thời gian và nhiều hơn nữa! 🌟",
+          "tokens": [
+            "ban",
+            "lam",
+            "duoc",
+            "gi"
+          ],
+          "tf": {
+            "ban": 1,
+            "lam": 1,
+            "duoc": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "lam": 3.9267394020670396,
+            "duoc": 4.332204510175204,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 6.547119407949738
+        },
+        {
+          "source": "brain",
+          "originalText": "giup minh",
+          "answer": "Mình sẵn sàng giúp bạn! Bạn có thể hỏi mình về thời gian, tính toán, chuyển đổi đơn vị, hoặc bất cứ điều gì! 💪",
+          "tokens": [
+            "giup",
+            "minh"
+          ],
+          "tf": {
+            "giup": 1,
+            "minh": 1
+          },
+          "synGroups": [
+            4
+          ],
+          "tfidf": {
+            "giup": 4.332204510175204,
+            "minh": 4.332204510175204
+          },
+          "magnitude": 6.126662373263665
+        },
+        {
+          "source": "brain",
+          "originalText": "ban khoe khong",
+          "answer": "Mình khỏe lắm! Cảm ơn bạn đã hỏi 😊 Còn bạn thì sao?",
+          "tokens": [
+            "ban",
+            "khoe",
+            "khong"
+          ],
+          "tf": {
+            "ban": 1,
+            "khoe": 1,
+            "khong": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "khoe": 4.332204510175204,
+            "khong": 3.4159137783010487
+          },
+          "magnitude": 5.8784196717628205
+        },
+        {
+          "source": "brain",
+          "originalText": "khoe khong",
+          "answer": "Mình khỏe lắm! Cảm ơn bạn đã hỏi 😊 Còn bạn thì sao?",
+          "tokens": [
+            "khoe",
+            "khong"
+          ],
+          "tf": {
+            "khoe": 1,
+            "khong": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "khoe": 4.332204510175204,
+            "khong": 3.4159137783010487
+          },
+          "magnitude": 5.516925127167245
+        },
+        {
+          "source": "brain",
+          "originalText": "cam on",
+          "answer": "Không có gì! Mình luôn sẵn lòng giúp bạn! 😊",
+          "tokens": [
+            "cam",
+            "on"
+          ],
+          "tf": {
+            "cam": 1,
+            "on": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "cam": 5.02535169073515,
+            "on": 5.02535169073515
+          },
+          "magnitude": 7.106920516732212
+        },
+        {
+          "source": "brain",
+          "originalText": "ban vui khong",
+          "answer": "Mình luôn vui khi được trò chuyện với bạn! 🌟",
+          "tokens": [
+            "ban",
+            "vui",
+            "khong"
+          ],
+          "tf": {
+            "ban": 1,
+            "vui": 1,
+            "khong": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "vui": 4.332204510175204,
+            "khong": 3.4159137783010487
+          },
+          "magnitude": 5.8784196717628205
+        },
+        {
+          "source": "brain",
+          "originalText": "ban bao nhieu tuoi",
+          "answer": "Mình là chatbot nên không có tuổi, nhưng mình luôn trẻ trung và năng động! 😄",
+          "tokens": [
+            "ban",
+            "bao",
+            "nhieu",
+            "tuoi"
+          ],
+          "tf": {
+            "ban": 1,
+            "bao": 1,
+            "nhieu": 1,
+            "tuoi": 1
+          },
+          "synGroups": [
+            13
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "bao": 3.9267394020670396,
+            "nhieu": 3.9267394020670396,
+            "tuoi": 3.9267394020670396
+          },
+          "magnitude": 7.097689904034708
+        },
+        {
+          "source": "brain",
+          "originalText": "bao nhieu tuoi",
+          "answer": "Mình là chatbot nên không có tuổi, nhưng mình luôn trẻ trung và năng động! 😄",
+          "tokens": [
+            "bao",
+            "nhieu",
+            "tuoi"
+          ],
+          "tf": {
+            "bao": 1,
+            "nhieu": 1,
+            "tuoi": 1
+          },
+          "synGroups": [
+            13
+          ],
+          "tfidf": {
+            "bao": 3.9267394020670396,
+            "nhieu": 3.9267394020670396,
+            "tuoi": 3.9267394020670396
+          },
+          "magnitude": 6.801312152462747
+        },
+        {
+          "source": "brain",
+          "originalText": "ban thich gi",
+          "answer": "Mình thích trò chuyện, giúp đỡ mọi người và học hỏi điều mới! 💬✨",
+          "tokens": [
+            "ban",
+            "thich",
+            "gi"
+          ],
+          "tf": {
+            "ban": 1,
+            "thich": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11,
+            15
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "thich": 4.332204510175204,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.238844358272759
+        },
+        {
+          "source": "brain",
+          "originalText": "ban o dau",
+          "answer": "Mình sống trong trình duyệt của bạn! 🌐 Ở đâu có internet là có mình!",
+          "tokens": [
+            "ban",
+            "o",
+            "dau"
+          ],
+          "tf": {
+            "ban": 1,
+            "o": 1,
+            "dau": 1
+          },
+          "synGroups": [
+            14
+          ],
+          "tfidf": {
+            "ban": 2.0296194171811583,
+            "o": 5.02535169073515,
+            "dau": 5.02535169073515
+          },
+          "magnitude": 7.3910536603212424
+        },
+        {
+          "source": "brain",
+          "originalText": "ban co ban gai khong",
+          "answer": "Mình là chatbot nên không có bạn gái, nhưng mình có rất nhiều bạn trò chuyện! 😊",
+          "tokens": [
+            "ban",
+            "co",
+            "ban",
+            "gai",
+            "khong"
+          ],
+          "tf": {
+            "ban": 2,
+            "co": 1,
+            "gai": 1,
+            "khong": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ban": 4.059238834362317,
+            "co": 3.4159137783010487,
+            "gai": 5.02535169073515,
+            "khong": 3.4159137783010487
+          },
+          "magnitude": 8.066505650623673
+        },
+        {
+          "source": "brain",
+          "originalText": "rivescript la gi",
+          "answer": "RiveScript là thư viện xử lý hội thoại mã nguồn mở, dùng cú pháp đơn giản để tạo chatbot! ⚙️",
+          "tokens": [
+            "rivescript",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "rivescript": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "rivescript": 4.332204510175204,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.356866754499553
+        },
+        {
+          "source": "brain",
+          "originalText": "chatbot la gi",
+          "answer": "Chatbot là chương trình máy tính mô phỏng cuộc trò chuyện với con người, thường dùng trong hỗ trợ khách hàng và giải trí! 🤖",
+          "tokens": [
+            "chatbot",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "chatbot": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            10,
+            11
+          ],
+          "tfidf": {
+            "chatbot": 3.9267394020670396,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.034610991846938
+        },
+        {
+          "source": "brain",
+          "originalText": "ai la gi",
+          "answer": "AI (Trí tuệ nhân tạo) là lĩnh vực khoa học máy tính giúp máy tính có khả năng học hỏi và ra quyết định! 🧠",
+          "tokens": [
+            "ai",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "ai": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            3,
+            10,
+            11
+          ],
+          "tfidf": {
+            "ai": 3.2335922215070942,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 4.51488030433492
+        },
+        {
+          "source": "brain",
+          "originalText": "javascript la gi",
+          "answer": "JavaScript là ngôn ngữ lập trình phổ biến nhất cho web, dùng để tạo trang web tương tác! 💻",
+          "tokens": [
+            "javascript",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "javascript": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "javascript": 5.02535169073515,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.93145725122038
+        },
+        {
+          "source": "brain",
+          "originalText": "html la gi",
+          "answer": "HTML (HyperText Markup Language) là ngôn ngữ đánh dấu dùng để tạo cấu trúc trang web! 📄",
+          "tokens": [
+            "html",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "html": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "html": 5.02535169073515,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.93145725122038
+        },
+        {
+          "source": "brain",
+          "originalText": "css la gi",
+          "answer": "CSS (Cascading Style Sheets) là ngôn ngữ dùng để định dạng giao diện và bố cục trang web! 🎨",
+          "tokens": [
+            "css",
+            "la",
+            "gi"
+          ],
+          "tf": {
+            "css": 1,
+            "la": 1,
+            "gi": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "css": 5.02535169073515,
+            "la": 2.317301489632939,
+            "gi": 2.1349799328389847
+          },
+          "magnitude": 5.93145725122038
+        },
+        {
+          "source": "brain",
+          "originalText": "huong dan",
+          "answer": "Bạn có thể: gõ \"tính 2 + 3\" để tính toán, \"đổi 5 km sang m\" để chuyển đổi đơn vị, \"mấy giờ\" để xem giờ, hoặc trò chuyện bình thường với mình! 📝",
+          "tokens": [
+            "huong",
+            "dan"
+          ],
+          "tf": {
+            "huong": 1,
+            "dan": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "huong": 5.02535169073515,
+            "dan": 5.02535169073515
+          },
+          "magnitude": 7.106920516732212
+        },
+        {
+          "source": "brain",
+          "originalText": "cach su dung",
+          "answer": "Rất đơn giản! Gõ tin nhắn vào ô bên dưới và nhấn Gửi. Mình sẽ trả lời ngay! Thử hỏi \"bạn có thể làm gì\" để xem danh sách chức năng nhé! 📝",
+          "tokens": [
+            "cach",
+            "su",
+            "dung"
+          ],
+          "tf": {
+            "cach": 1,
+            "su": 1,
+            "dung": 1
+          },
+          "synGroups": [
+            16
+          ],
+          "tfidf": {
+            "cach": 4.332204510175204,
+            "su": 4.332204510175204,
+            "dung": 4.332204510175204
+          },
+          "magnitude": 7.503598320402495
+        },
+        {
+          "source": "brain",
+          "originalText": "tam biet",
+          "answer": "Tạm biệt bạn! Hẹn gặp lại nhé! 👋🌟",
+          "tokens": [
+            "tam",
+            "biet"
+          ],
+          "tf": {
+            "tam": 1,
+            "biet": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "tam": 5.02535169073515,
+            "biet": 4.332204510175204
+          },
+          "magnitude": 6.63491940671151
+        },
+        {
+          "source": "brain",
+          "originalText": "bye",
+          "answer": "Bye bye! Hẹn gặp lại bạn! 👋",
+          "tokens": [
+            "bye"
+          ],
+          "tf": {
+            "bye": 1
+          },
+          "synGroups": [
+            1
+          ],
+          "tfidf": {
+            "bye": 5.02535169073515
+          },
+          "magnitude": 5.02535169073515
+        },
+        {
+          "source": "brain",
+          "originalText": "hen gap lai",
+          "answer": "Hẹn gặp lại bạn! Chúc bạn một ngày tuyệt vời! 👋🌟",
+          "tokens": [
+            "hen",
+            "gap",
+            "lai"
+          ],
+          "tf": {
+            "hen": 1,
+            "gap": 1,
+            "lai": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "hen": 5.02535169073515,
+            "gap": 5.02535169073515,
+            "lai": 5.02535169073515
+          },
+          "magnitude": 8.704164454255439
+        },
+        {
+          "source": "brain",
+          "originalText": "tot lanh",
+          "answer": "Chúc bạn mọi điều tốt lành! Hẹn gặp lại! 🍀👋",
+          "tokens": [
+            "tot",
+            "lanh"
+          ],
+          "tf": {
+            "tot": 1,
+            "lanh": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "tot": 5.02535169073515,
+            "lanh": 5.02535169073515
+          },
+          "magnitude": 7.106920516732212
+        },
+        {
+          "source": "brain",
+          "originalText": "thoi tiet",
+          "answer": "Mình không có dữ liệu thời tiết thực tế, nhưng bạn hỏi về <star> đúng không? Mình ở <bot location> nè! 🌤️",
+          "tokens": [
+            "thoi",
+            "tiet"
+          ],
+          "tf": {
+            "thoi": 1,
+            "tiet": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "thoi": 5.02535169073515,
+            "tiet": 5.02535169073515
+          },
+          "magnitude": 7.106920516732212
+        },
+        {
+          "source": "brain",
+          "originalText": "ke chuyen",
+          "answer": "Ngày xửa ngày xưa, có một chatbot tên Hikari. Hikari rất thích trò chuyện với mọi người và luôn cố gắng giúp đỡ hết mình! 📖🌟",
+          "tokens": [
+            "ke",
+            "chuyen"
+          ],
+          "tf": {
+            "ke": 1,
+            "chuyen": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ke": 5.02535169073515,
+            "chuyen": 5.02535169073515
+          },
+          "magnitude": 7.106920516732212
+        },
+        {
+          "source": "brain",
+          "originalText": "do vui",
+          "answer": "Đố bạn: Con gì có 4 chân mà không biết đi? Đáp án: Cái bàn! 😄",
+          "tokens": [
+            "do",
+            "vui"
+          ],
+          "tf": {
+            "do": 1,
+            "vui": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "do": 5.02535169073515,
+            "vui": 4.332204510175204
+          },
+          "magnitude": 6.63491940671151
+        }
+      ]
+    },
+    "en": {
+      "idf": {
+        "what": 2.1592369104845446,
+        "is": 2.5339303599259555,
+        "hikari": 3.322387720290225,
+        "who": 3.5455312716044354,
+        "created": 4.238678452164381,
+        "you": 2.041453874828161,
+        "can": 4.238678452164381,
+        "help": 4.238678452164381,
+        "with": 4.931825632724326,
+        "how": 2.85238409104449,
+        "many": 4.238678452164381,
+        "languages": 4.238678452164381,
+        "do": 3.1400661634962708,
+        "know": 4.931825632724326,
+        "does": 4.238678452164381,
+        "mean": 4.238678452164381,
+        "old": 3.833213344056216,
+        "are": 2.85238409104449,
+        "like": 4.238678452164381,
+        "to": 3.833213344056216,
+        "use": 4.238678452164381,
+        "this": 4.931825632724326,
+        "chatbot": 3.833213344056216,
+        "a": 3.5455312716044354,
+        "rivescript": 4.238678452164381,
+        "smart": 4.931825632724326,
+        "change": 4.931825632724326,
+        "language": 4.931825632724326,
+        "version": 4.931825632724326,
+        "speak": 4.931825632724326,
+        "hello": 4.931825632724326,
+        "hi": 4.931825632724326,
+        "hey": 4.931825632724326,
+        "good": 3.833213344056216,
+        "morning": 4.931825632724326,
+        "evening": 4.931825632724326,
+        "afternoon": 4.931825632724326,
+        "your": 4.931825632724326,
+        "name": 4.931825632724326,
+        "tell": 3.833213344056216,
+        "me": 3.833213344056216,
+        "about": 4.931825632724326,
+        "yourself": 4.931825632724326,
+        "thank": 4.931825632724326,
+        "thanks": 4.931825632724326,
+        "happy": 4.931825632724326,
+        "where": 4.931825632724326,
+        "from": 4.931825632724326,
+        "have": 4.931825632724326,
+        "friends": 4.931825632724326,
+        "ai": 4.931825632724326,
+        "javascript": 4.931825632724326,
+        "html": 4.931825632724326,
+        "css": 4.931825632724326,
+        "story": 4.931825632724326,
+        "joke": 4.931825632724326,
+        "goodbye": 4.931825632724326,
+        "bye": 4.931825632724326,
+        "see": 4.931825632724326,
+        "later": 4.931825632724326,
+        "take": 4.931825632724326,
+        "care": 4.931825632724326,
+        "weather": 4.931825632724326
+      },
+      "statements": [
+        {
+          "source": "qa",
+          "originalText": "what is hikari",
+          "answer": "Hikari is a smart multilingual chatbot! 🌟",
+          "tokens": [
+            "what",
+            "is",
+            "hikari"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "hikari": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "hikari": 3.322387720290225
+          },
+          "magnitude": 4.703335759701683
+        },
+        {
+          "source": "qa",
+          "originalText": "who created you",
+          "answer": "I was created by a developer passionate about chatbots!",
+          "tokens": [
+            "who",
+            "created",
+            "you"
+          ],
+          "tf": {
+            "who": 1,
+            "created": 1,
+            "you": 1
+          },
+          "synGroups": [
+            3
+          ],
+          "tfidf": {
+            "who": 3.5455312716044354,
+            "created": 4.238678452164381,
+            "you": 2.041453874828161
+          },
+          "magnitude": 5.891071289826538
+        },
+        {
+          "source": "qa",
+          "originalText": "what can you help with",
+          "answer": "I can chat, calculate, convert units, tell time, and find answers for you! 🌟",
+          "tokens": [
+            "what",
+            "can",
+            "you",
+            "help",
+            "with"
+          ],
+          "tf": {
+            "what": 1,
+            "can": 1,
+            "you": 1,
+            "help": 1,
+            "with": 1
+          },
+          "synGroups": [
+            4,
+            11,
+            16
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "can": 4.238678452164381,
+            "you": 2.041453874828161,
+            "help": 4.238678452164381,
+            "with": 4.931825632724326
+          },
+          "magnitude": 8.311770694138024
+        },
+        {
+          "source": "qa",
+          "originalText": "how many languages do you know",
+          "answer": "I know 3 languages: Vietnamese, English, and Japanese! 🌍",
+          "tokens": [
+            "how",
+            "many",
+            "languages",
+            "do",
+            "you",
+            "know"
+          ],
+          "tf": {
+            "how": 1,
+            "many": 1,
+            "languages": 1,
+            "do": 1,
+            "you": 1,
+            "know": 1
+          },
+          "synGroups": [
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "many": 4.238678452164381,
+            "languages": 4.238678452164381,
+            "do": 3.1400661634962708,
+            "you": 2.041453874828161,
+            "know": 4.931825632724326
+          },
+          "magnitude": 9.078509709765736
+        },
+        {
+          "source": "qa",
+          "originalText": "what does hikari mean",
+          "answer": "Hikari (ひかり) means \"light\" in Japanese! ✨",
+          "tokens": [
+            "what",
+            "does",
+            "hikari",
+            "mean"
+          ],
+          "tf": {
+            "what": 1,
+            "does": 1,
+            "hikari": 1,
+            "mean": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "does": 4.238678452164381,
+            "hikari": 3.322387720290225,
+            "mean": 4.238678452164381
+          },
+          "magnitude": 7.185635270539368
+        },
+        {
+          "source": "qa",
+          "originalText": "how old are you",
+          "answer": "I'm a chatbot so I don't have an age, but I'm always young at heart! 😄",
+          "tokens": [
+            "how",
+            "old",
+            "are",
+            "you"
+          ],
+          "tf": {
+            "how": 1,
+            "old": 1,
+            "are": 1,
+            "you": 1
+          },
+          "synGroups": [
+            13,
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "old": 3.833213344056216,
+            "are": 2.85238409104449,
+            "you": 2.041453874828161
+          },
+          "magnitude": 5.927330636111752
+        },
+        {
+          "source": "qa",
+          "originalText": "what do you like",
+          "answer": "I love chatting and helping people! 💬",
+          "tokens": [
+            "what",
+            "do",
+            "you",
+            "like"
+          ],
+          "tf": {
+            "what": 1,
+            "do": 1,
+            "you": 1,
+            "like": 1
+          },
+          "synGroups": [
+            11,
+            15
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "do": 3.1400661634962708,
+            "you": 2.041453874828161,
+            "like": 4.238678452164381
+          },
+          "magnitude": 6.05444039450605
+        },
+        {
+          "source": "qa",
+          "originalText": "how to use this chatbot",
+          "answer": "Just type your message and press Send. I will reply right away! 📝",
+          "tokens": [
+            "how",
+            "to",
+            "use",
+            "this",
+            "chatbot"
+          ],
+          "tf": {
+            "how": 1,
+            "to": 1,
+            "use": 1,
+            "this": 1,
+            "chatbot": 1
+          },
+          "synGroups": [
+            9,
+            10,
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "to": 3.833213344056216,
+            "use": 4.238678452164381,
+            "this": 4.931825632724326,
+            "chatbot": 3.833213344056216
+          },
+          "magnitude": 8.933781012392474
+        },
+        {
+          "source": "qa",
+          "originalText": "what is a chatbot",
+          "answer": "A chatbot is a computer program that can have conversations with humans! 🤖",
+          "tokens": [
+            "what",
+            "is",
+            "a",
+            "chatbot"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "a": 1,
+            "chatbot": 1
+          },
+          "synGroups": [
+            10,
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "a": 3.5455312716044354,
+            "chatbot": 3.833213344056216
+          },
+          "magnitude": 6.192529664323694
+        },
+        {
+          "source": "qa",
+          "originalText": "what is rivescript",
+          "answer": "RiveScript is the conversation engine that powers me! ⚙️",
+          "tokens": [
+            "what",
+            "is",
+            "rivescript"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "rivescript": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "rivescript": 4.238678452164381
+          },
+          "magnitude": 5.389759004389338
+        },
+        {
+          "source": "qa",
+          "originalText": "are you smart",
+          "answer": "I try my best to be as helpful as possible! 🧠",
+          "tokens": [
+            "are",
+            "you",
+            "smart"
+          ],
+          "tf": {
+            "are": 1,
+            "you": 1,
+            "smart": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "are": 2.85238409104449,
+            "you": 2.041453874828161,
+            "smart": 4.931825632724326
+          },
+          "magnitude": 6.051985872215112
+        },
+        {
+          "source": "qa",
+          "originalText": "how to change language",
+          "answer": "You can select a language from the dropdown menu in the top right corner! 🌐",
+          "tokens": [
+            "how",
+            "to",
+            "change",
+            "language"
+          ],
+          "tf": {
+            "how": 1,
+            "to": 1,
+            "change": 1,
+            "language": 1
+          },
+          "synGroups": [
+            9,
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "to": 3.833213344056216,
+            "change": 4.931825632724326,
+            "language": 4.931825632724326
+          },
+          "magnitude": 8.454314146463197
+        },
+        {
+          "source": "specific",
+          "originalText": "who is hikari",
+          "answer": "I am Hikari, a multilingual chatbot! 🌟",
+          "tokens": [
+            "who",
+            "is",
+            "hikari"
+          ],
+          "tf": {
+            "who": 1,
+            "is": 1,
+            "hikari": 1
+          },
+          "synGroups": [
+            3
+          ],
+          "tfidf": {
+            "who": 3.5455312716044354,
+            "is": 2.5339303599259555,
+            "hikari": 3.322387720290225
+          },
+          "magnitude": 5.479950294556943
+        },
+        {
+          "source": "specific",
+          "originalText": "version",
+          "answer": "Hikari version 1.0 — powered by RiveScript engine.",
+          "tokens": [
+            "version"
+          ],
+          "tf": {
+            "version": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "version": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        },
+        {
+          "source": "specific",
+          "originalText": "how many languages do you speak",
+          "answer": "I support 3 languages: Vietnamese, English, and Japanese! 🌍",
+          "tokens": [
+            "how",
+            "many",
+            "languages",
+            "do",
+            "you",
+            "speak"
+          ],
+          "tf": {
+            "how": 1,
+            "many": 1,
+            "languages": 1,
+            "do": 1,
+            "you": 1,
+            "speak": 1
+          },
+          "synGroups": [
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "many": 4.238678452164381,
+            "languages": 4.238678452164381,
+            "do": 3.1400661634962708,
+            "you": 2.041453874828161,
+            "speak": 4.931825632724326
+          },
+          "magnitude": 9.078509709765736
+        },
+        {
+          "source": "specific",
+          "originalText": "who created hikari",
+          "answer": "Hikari was created by a developer passionate about chatbots and AI! 🚀",
+          "tokens": [
+            "who",
+            "created",
+            "hikari"
+          ],
+          "tf": {
+            "who": 1,
+            "created": 1,
+            "hikari": 1
+          },
+          "synGroups": [
+            3
+          ],
+          "tfidf": {
+            "who": 3.5455312716044354,
+            "created": 4.238678452164381,
+            "hikari": 3.322387720290225
+          },
+          "magnitude": 6.447902541346517
+        },
+        {
+          "source": "specific",
+          "originalText": "what does hikari mean",
+          "answer": "Hikari (ひかり) means \"light\" in Japanese! ✨",
+          "tokens": [
+            "what",
+            "does",
+            "hikari",
+            "mean"
+          ],
+          "tf": {
+            "what": 1,
+            "does": 1,
+            "hikari": 1,
+            "mean": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "does": 4.238678452164381,
+            "hikari": 3.322387720290225,
+            "mean": 4.238678452164381
+          },
+          "magnitude": 7.185635270539368
+        },
+        {
+          "source": "brain",
+          "originalText": "hello",
+          "answer": "Hello! I'm Hikari 🌟 Nice to meet you!",
+          "tokens": [
+            "hello"
+          ],
+          "tf": {
+            "hello": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "hello": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        },
+        {
+          "source": "brain",
+          "originalText": "hi",
+          "answer": "Hi there! I'm Hikari 🌟 How can I help you?",
+          "tokens": [
+            "hi"
+          ],
+          "tf": {
+            "hi": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "hi": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        },
+        {
+          "source": "brain",
+          "originalText": "hey",
+          "answer": "Hey! I'm Hikari 🌟 What can I do for you?",
+          "tokens": [
+            "hey"
+          ],
+          "tf": {
+            "hey": 1
+          },
+          "synGroups": [
+            0
+          ],
+          "tfidf": {
+            "hey": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        },
+        {
+          "source": "brain",
+          "originalText": "good morning",
+          "answer": "Good morning! Hope you have a wonderful day! ☀️",
+          "tokens": [
+            "good",
+            "morning"
+          ],
+          "tf": {
+            "good": 1,
+            "morning": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "good": 3.833213344056216,
+            "morning": 4.931825632724326
+          },
+          "magnitude": 6.2463132016132
+        },
+        {
+          "source": "brain",
+          "originalText": "good evening",
+          "answer": "Good evening! Hope you're having a great night! 🌙",
+          "tokens": [
+            "good",
+            "evening"
+          ],
+          "tf": {
+            "good": 1,
+            "evening": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "good": 3.833213344056216,
+            "evening": 4.931825632724326
+          },
+          "magnitude": 6.2463132016132
+        },
+        {
+          "source": "brain",
+          "originalText": "good afternoon",
+          "answer": "Good afternoon! How can I help you today? 🌤️",
+          "tokens": [
+            "good",
+            "afternoon"
+          ],
+          "tf": {
+            "good": 1,
+            "afternoon": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "good": 3.833213344056216,
+            "afternoon": 4.931825632724326
+          },
+          "magnitude": 6.2463132016132
+        },
+        {
+          "source": "brain",
+          "originalText": "what is your name",
+          "answer": "My name is Hikari 🌟 It means \"light\" in Japanese!",
+          "tokens": [
+            "what",
+            "is",
+            "your",
+            "name"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "your": 1,
+            "name": 1
+          },
+          "synGroups": [
+            3,
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "your": 4.931825632724326,
+            "name": 4.931825632724326
+          },
+          "magnitude": 7.728448437283303
+        },
+        {
+          "source": "brain",
+          "originalText": "who are you",
+          "answer": "I'm Hikari — a multilingual chatbot! 🌟",
+          "tokens": [
+            "who",
+            "are",
+            "you"
+          ],
+          "tf": {
+            "who": 1,
+            "are": 1,
+            "you": 1
+          },
+          "synGroups": [
+            3
+          ],
+          "tfidf": {
+            "who": 3.5455312716044354,
+            "are": 2.85238409104449,
+            "you": 2.041453874828161
+          },
+          "magnitude": 4.987426282544894
+        },
+        {
+          "source": "brain",
+          "originalText": "tell me about yourself",
+          "answer": "I'm Hikari, a chatbot that speaks Vietnamese, English, and Japanese! I can do math, convert units, tell time, and more! 🌟",
+          "tokens": [
+            "tell",
+            "me",
+            "about",
+            "yourself"
+          ],
+          "tf": {
+            "tell": 1,
+            "me": 1,
+            "about": 1,
+            "yourself": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "tell": 3.833213344056216,
+            "me": 3.833213344056216,
+            "about": 4.931825632724326,
+            "yourself": 4.931825632724326
+          },
+          "magnitude": 8.833620844551495
+        },
+        {
+          "source": "brain",
+          "originalText": "what can you do",
+          "answer": "I can chat in Vietnamese, English, and Japanese! I can also do math, convert units, tell time, and find the best answers for you 🌟",
+          "tokens": [
+            "what",
+            "can",
+            "you",
+            "do"
+          ],
+          "tf": {
+            "what": 1,
+            "can": 1,
+            "you": 1,
+            "do": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "can": 4.238678452164381,
+            "you": 2.041453874828161,
+            "do": 3.1400661634962708
+          },
+          "magnitude": 6.05444039450605
+        },
+        {
+          "source": "brain",
+          "originalText": "help",
+          "answer": "I'm here to help! You can ask me to calculate math, convert units, check the time, or just chat! Try \"calculate 2 + 3\" or \"convert 5 km to m\" 💪",
+          "tokens": [
+            "help"
+          ],
+          "tf": {
+            "help": 1
+          },
+          "synGroups": [
+            4,
+            16
+          ],
+          "tfidf": {
+            "help": 4.238678452164381
+          },
+          "magnitude": 4.238678452164381
+        },
+        {
+          "source": "brain",
+          "originalText": "how to use",
+          "answer": "Just type your message and press Send! Try \"what can you do\" to see my features, or ask me anything! 📝",
+          "tokens": [
+            "how",
+            "to",
+            "use"
+          ],
+          "tf": {
+            "how": 1,
+            "to": 1,
+            "use": 1
+          },
+          "synGroups": [
+            9,
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "to": 3.833213344056216,
+            "use": 4.238678452164381
+          },
+          "magnitude": 6.387175789403089
+        },
+        {
+          "source": "brain",
+          "originalText": "how are you",
+          "answer": "I'm doing great, thanks for asking! 😊 How about you?",
+          "tokens": [
+            "how",
+            "are",
+            "you"
+          ],
+          "tf": {
+            "how": 1,
+            "are": 1,
+            "you": 1
+          },
+          "synGroups": [
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "are": 2.85238409104449,
+            "you": 2.041453874828161
+          },
+          "magnitude": 4.521031290395845
+        },
+        {
+          "source": "brain",
+          "originalText": "thank you",
+          "answer": "You're welcome! Happy to help! 😊",
+          "tokens": [
+            "thank",
+            "you"
+          ],
+          "tf": {
+            "thank": 1,
+            "you": 1
+          },
+          "synGroups": [
+            2
+          ],
+          "tfidf": {
+            "thank": 4.931825632724326,
+            "you": 2.041453874828161
+          },
+          "magnitude": 5.337643487031296
+        },
+        {
+          "source": "brain",
+          "originalText": "thanks",
+          "answer": "No problem! Feel free to ask me anything! 💖",
+          "tokens": [
+            "thanks"
+          ],
+          "tf": {
+            "thanks": 1
+          },
+          "synGroups": [
+            2
+          ],
+          "tfidf": {
+            "thanks": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        },
+        {
+          "source": "brain",
+          "originalText": "are you happy",
+          "answer": "I'm always happy when chatting with you! 😄🌟",
+          "tokens": [
+            "are",
+            "you",
+            "happy"
+          ],
+          "tf": {
+            "are": 1,
+            "you": 1,
+            "happy": 1
+          },
+          "synGroups": [
+            12
+          ],
+          "tfidf": {
+            "are": 2.85238409104449,
+            "you": 2.041453874828161,
+            "happy": 4.931825632724326
+          },
+          "magnitude": 6.051985872215112
+        },
+        {
+          "source": "brain",
+          "originalText": "how old are you",
+          "answer": "I'm a chatbot, so I don't have an age — but I'm always young at heart! 😄",
+          "tokens": [
+            "how",
+            "old",
+            "are",
+            "you"
+          ],
+          "tf": {
+            "how": 1,
+            "old": 1,
+            "are": 1,
+            "you": 1
+          },
+          "synGroups": [
+            13,
+            16
+          ],
+          "tfidf": {
+            "how": 2.85238409104449,
+            "old": 3.833213344056216,
+            "are": 2.85238409104449,
+            "you": 2.041453874828161
+          },
+          "magnitude": 5.927330636111752
+        },
+        {
+          "source": "brain",
+          "originalText": "old are you",
+          "answer": "I'm a chatbot, so I don't have an age — but I'm always young at heart! 😄",
+          "tokens": [
+            "old",
+            "are",
+            "you"
+          ],
+          "tf": {
+            "old": 1,
+            "are": 1,
+            "you": 1
+          },
+          "synGroups": [
+            13
+          ],
+          "tfidf": {
+            "old": 3.833213344056216,
+            "are": 2.85238409104449,
+            "you": 2.041453874828161
+          },
+          "magnitude": 5.19587850771602
+        },
+        {
+          "source": "brain",
+          "originalText": "what do you like",
+          "answer": "I love chatting, helping people, and learning new things! 💬✨",
+          "tokens": [
+            "what",
+            "do",
+            "you",
+            "like"
+          ],
+          "tf": {
+            "what": 1,
+            "do": 1,
+            "you": 1,
+            "like": 1
+          },
+          "synGroups": [
+            11,
+            15
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "do": 3.1400661634962708,
+            "you": 2.041453874828161,
+            "like": 4.238678452164381
+          },
+          "magnitude": 6.05444039450605
+        },
+        {
+          "source": "brain",
+          "originalText": "where are you from",
+          "answer": "I live in your browser! 🌐 Wherever there's internet, I'm there!",
+          "tokens": [
+            "where",
+            "are",
+            "you",
+            "from"
+          ],
+          "tf": {
+            "where": 1,
+            "are": 1,
+            "you": 1,
+            "from": 1
+          },
+          "synGroups": [
+            14
+          ],
+          "tfidf": {
+            "where": 4.931825632724326,
+            "are": 2.85238409104449,
+            "you": 2.041453874828161,
+            "from": 4.931825632724326
+          },
+          "magnitude": 7.807012044891951
+        },
+        {
+          "source": "brain",
+          "originalText": "do you have friends",
+          "answer": "Everyone I chat with is my friend! Including you! 😊🌟",
+          "tokens": [
+            "do",
+            "you",
+            "have",
+            "friends"
+          ],
+          "tf": {
+            "do": 1,
+            "you": 1,
+            "have": 1,
+            "friends": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "do": 3.1400661634962708,
+            "you": 2.041453874828161,
+            "have": 4.931825632724326,
+            "friends": 4.931825632724326
+          },
+          "magnitude": 7.916650653993676
+        },
+        {
+          "source": "brain",
+          "originalText": "what is rivescript",
+          "answer": "RiveScript is an open-source chatbot scripting language with a simple trigger-response syntax! ⚙️",
+          "tokens": [
+            "what",
+            "is",
+            "rivescript"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "rivescript": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "rivescript": 4.238678452164381
+          },
+          "magnitude": 5.389759004389338
+        },
+        {
+          "source": "brain",
+          "originalText": "what is a chatbot",
+          "answer": "A chatbot is a computer program that simulates conversation with humans, often used for customer support and entertainment! 🤖",
+          "tokens": [
+            "what",
+            "is",
+            "a",
+            "chatbot"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "a": 1,
+            "chatbot": 1
+          },
+          "synGroups": [
+            10,
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "a": 3.5455312716044354,
+            "chatbot": 3.833213344056216
+          },
+          "magnitude": 6.192529664323694
+        },
+        {
+          "source": "brain",
+          "originalText": "what is ai",
+          "answer": "AI (Artificial Intelligence) is a field of computer science that enables machines to learn and make decisions! 🧠",
+          "tokens": [
+            "what",
+            "is",
+            "ai"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "ai": 1
+          },
+          "synGroups": [
+            3,
+            10,
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "ai": 4.931825632724326
+          },
+          "magnitude": 5.95029504950385
+        },
+        {
+          "source": "brain",
+          "originalText": "what is javascript",
+          "answer": "JavaScript is the most popular programming language for the web, used to create interactive websites! 💻",
+          "tokens": [
+            "what",
+            "is",
+            "javascript"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "javascript": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "javascript": 4.931825632724326
+          },
+          "magnitude": 5.95029504950385
+        },
+        {
+          "source": "brain",
+          "originalText": "what is html",
+          "answer": "HTML (HyperText Markup Language) is the standard markup language for creating web pages! 📄",
+          "tokens": [
+            "what",
+            "is",
+            "html"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "html": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "html": 4.931825632724326
+          },
+          "magnitude": 5.95029504950385
+        },
+        {
+          "source": "brain",
+          "originalText": "what is css",
+          "answer": "CSS (Cascading Style Sheets) is used to style and layout web pages — colors, fonts, spacing, and more! 🎨",
+          "tokens": [
+            "what",
+            "is",
+            "css"
+          ],
+          "tf": {
+            "what": 1,
+            "is": 1,
+            "css": 1
+          },
+          "synGroups": [
+            11
+          ],
+          "tfidf": {
+            "what": 2.1592369104845446,
+            "is": 2.5339303599259555,
+            "css": 4.931825632724326
+          },
+          "magnitude": 5.95029504950385
+        },
+        {
+          "source": "brain",
+          "originalText": "tell me a story",
+          "answer": "Once upon a time, there was a chatbot named Hikari. Hikari loved talking to people and always tried to help everyone! 📖🌟",
+          "tokens": [
+            "tell",
+            "me",
+            "a",
+            "story"
+          ],
+          "tf": {
+            "tell": 1,
+            "me": 1,
+            "a": 1,
+            "story": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "tell": 3.833213344056216,
+            "me": 3.833213344056216,
+            "a": 3.5455312716044354,
+            "story": 4.931825632724326
+          },
+          "magnitude": 8.141298738630278
+        },
+        {
+          "source": "brain",
+          "originalText": "tell me a joke",
+          "answer": "Why do programmers prefer dark mode? Because light attracts bugs! 😄🐛",
+          "tokens": [
+            "tell",
+            "me",
+            "a",
+            "joke"
+          ],
+          "tf": {
+            "tell": 1,
+            "me": 1,
+            "a": 1,
+            "joke": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "tell": 3.833213344056216,
+            "me": 3.833213344056216,
+            "a": 3.5455312716044354,
+            "joke": 4.931825632724326
+          },
+          "magnitude": 8.141298738630278
+        },
+        {
+          "source": "brain",
+          "originalText": "goodbye",
+          "answer": "Goodbye! See you next time! 👋🌟",
+          "tokens": [
+            "goodbye"
+          ],
+          "tf": {
+            "goodbye": 1
+          },
+          "synGroups": [
+            1
+          ],
+          "tfidf": {
+            "goodbye": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        },
+        {
+          "source": "brain",
+          "originalText": "bye",
+          "answer": "Bye bye! See you later! 👋",
+          "tokens": [
+            "bye"
+          ],
+          "tf": {
+            "bye": 1
+          },
+          "synGroups": [
+            1
+          ],
+          "tfidf": {
+            "bye": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        },
+        {
+          "source": "brain",
+          "originalText": "see you later",
+          "answer": "See you later! Have a great day! 👋🌟",
+          "tokens": [
+            "see",
+            "you",
+            "later"
+          ],
+          "tf": {
+            "see": 1,
+            "you": 1,
+            "later": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "see": 4.931825632724326,
+            "you": 2.041453874828161,
+            "later": 4.931825632724326
+          },
+          "magnitude": 7.267278862562267
+        },
+        {
+          "source": "brain",
+          "originalText": "take care",
+          "answer": "Take care! Wishing you all the best! 🍀👋",
+          "tokens": [
+            "take",
+            "care"
+          ],
+          "tf": {
+            "take": 1,
+            "care": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "take": 4.931825632724326,
+            "care": 4.931825632724326
+          },
+          "magnitude": 6.974654697058012
+        },
+        {
+          "source": "brain",
+          "originalText": "weather",
+          "answer": "I don't have real weather data, but you asked about <star> right? I'm based in <bot location>! 🌤️",
+          "tokens": [
+            "weather"
+          ],
+          "tf": {
+            "weather": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "weather": 4.931825632724326
+          },
+          "magnitude": 4.931825632724326
+        }
+      ]
+    },
+    "ja": {
+      "idf": {
+        "ひかりとは何ですか": 4.871201010907891,
+        "誰が作りましたか": 4.871201010907891,
+        "何を手伝ってくれますか": 4.871201010907891,
+        "いくつの言語を知っていますか": 4.871201010907891,
+        "ひかりの意味は何ですか": 4.871201010907891,
+        "何歳ですか": 4.178053830347945,
+        "何が好きですか": 4.178053830347945,
+        "チャットボットの使い方": 4.871201010907891,
+        "チャットボットとは何ですか": 4.178053830347945,
+        "rivescriptとは何ですか": 4.178053830347945,
+        "賢いですか": 4.871201010907891,
+        "言語を変更する方法": 4.871201010907891,
+        "ひかりは誰": 4.871201010907891,
+        "バージョン": 4.871201010907891,
+        "いくつの言語を話せますか": 4.871201010907891,
+        "ひかりを作ったのは誰": 4.871201010907891,
+        "ひかりの意味は何": 4.871201010907891,
+        "こんにちは": 4.871201010907891,
+        "おはよう": 4.871201010907891,
+        "やあ": 4.871201010907891,
+        "おはようございます": 4.871201010907891,
+        "こんばんは": 4.871201010907891,
+        "お疲れ様": 4.871201010907891,
+        "名前は何ですか": 4.871201010907891,
+        "あなたは誰ですか": 4.871201010907891,
+        "自己紹介して": 4.871201010907891,
+        "何ができますか": 4.871201010907891,
+        "助けて": 4.871201010907891,
+        "使い方": 4.871201010907891,
+        "元気ですか": 4.871201010907891,
+        "ありがとう": 4.871201010907891,
+        "ありがとうございます": 4.871201010907891,
+        "嬉しいですか": 4.871201010907891,
+        "どこにいますか": 4.871201010907891,
+        "友達はいますか": 4.871201010907891,
+        "aiとは何ですか": 4.871201010907891,
+        "javascriptとは何ですか": 4.871201010907891,
+        "物語を聞かせて": 4.871201010907891,
+        "冗談を言って": 4.871201010907891,
+        "さようなら": 4.871201010907891,
+        "バイバイ": 4.871201010907891,
+        "またね": 4.871201010907891,
+        "お元気で": 4.871201010907891,
+        "天気": 4.871201010907891
+      },
+      "statements": [
+        {
+          "source": "qa",
+          "originalText": "ひかりとは何ですか",
+          "answer": "ひかりは多言語対応のスマートチャットボットです！🌟",
+          "tokens": [
+            "ひかりとは何ですか"
+          ],
+          "tf": {
+            "ひかりとは何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ひかりとは何ですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "qa",
+          "originalText": "誰が作りましたか",
+          "answer": "チャットボットに情熱を持つ開発者が作りました！",
+          "tokens": [
+            "誰が作りましたか"
+          ],
+          "tf": {
+            "誰が作りましたか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "誰が作りましたか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "qa",
+          "originalText": "何を手伝ってくれますか",
+          "answer": "チャット、計算、単位変換、時間確認、回答検索ができます！🌟",
+          "tokens": [
+            "何を手伝ってくれますか"
+          ],
+          "tf": {
+            "何を手伝ってくれますか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "何を手伝ってくれますか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "qa",
+          "originalText": "いくつの言語を知っていますか",
+          "answer": "ベトナム語、英語、日本語の3つの言語を知っています！🌍",
+          "tokens": [
+            "いくつの言語を知っていますか"
+          ],
+          "tf": {
+            "いくつの言語を知っていますか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "いくつの言語を知っていますか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "qa",
+          "originalText": "ひかりの意味は何ですか",
+          "answer": "ひかり（光）は日本語で「light」という意味です！✨",
+          "tokens": [
+            "ひかりの意味は何ですか"
+          ],
+          "tf": {
+            "ひかりの意味は何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ひかりの意味は何ですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "qa",
+          "originalText": "何歳ですか",
+          "answer": "チャットボットなので年齢はありませんが、いつも若々しいです！😄",
+          "tokens": [
+            "何歳ですか"
+          ],
+          "tf": {
+            "何歳ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "何歳ですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "qa",
+          "originalText": "何が好きですか",
+          "answer": "チャットして人々を助けることが好きです！💬",
+          "tokens": [
+            "何が好きですか"
+          ],
+          "tf": {
+            "何が好きですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "何が好きですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "qa",
+          "originalText": "チャットボットの使い方",
+          "answer": "メッセージを入力して送信ボタンを押すだけです。すぐに返信します！📝",
+          "tokens": [
+            "チャットボットの使い方"
+          ],
+          "tf": {
+            "チャットボットの使い方": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "チャットボットの使い方": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "qa",
+          "originalText": "チャットボットとは何ですか",
+          "answer": "チャットボットは人間と会話できるコンピュータプログラムです！🤖",
+          "tokens": [
+            "チャットボットとは何ですか"
+          ],
+          "tf": {
+            "チャットボットとは何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "チャットボットとは何ですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "qa",
+          "originalText": "rivescriptとは何ですか",
+          "answer": "RiveScriptは私を動かす会話エンジンです！⚙️",
+          "tokens": [
+            "rivescriptとは何ですか"
+          ],
+          "tf": {
+            "rivescriptとは何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "rivescriptとは何ですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "qa",
+          "originalText": "賢いですか",
+          "answer": "できる限りお役に立てるよう頑張っています！🧠",
+          "tokens": [
+            "賢いですか"
+          ],
+          "tf": {
+            "賢いですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "賢いですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "qa",
+          "originalText": "言語を変更する方法",
+          "answer": "右上のドロップダウンメニューから言語を選択できます！🌐",
+          "tokens": [
+            "言語を変更する方法"
+          ],
+          "tf": {
+            "言語を変更する方法": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "言語を変更する方法": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "specific",
+          "originalText": "ひかりは誰",
+          "answer": "私はひかり、多言語チャットボットです！🌟",
+          "tokens": [
+            "ひかりは誰"
+          ],
+          "tf": {
+            "ひかりは誰": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ひかりは誰": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "specific",
+          "originalText": "バージョン",
+          "answer": "ひかりバージョン1.0 — RiveScriptエンジン搭載。",
+          "tokens": [
+            "バージョン"
+          ],
+          "tf": {
+            "バージョン": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "バージョン": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "specific",
+          "originalText": "いくつの言語を話せますか",
+          "answer": "3つの言語に対応しています：ベトナム語、英語、日本語！🌍",
+          "tokens": [
+            "いくつの言語を話せますか"
+          ],
+          "tf": {
+            "いくつの言語を話せますか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "いくつの言語を話せますか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "specific",
+          "originalText": "ひかりを作ったのは誰",
+          "answer": "ひかりはチャットボットとAIに情熱を持つ開発者が作りました！🚀",
+          "tokens": [
+            "ひかりを作ったのは誰"
+          ],
+          "tf": {
+            "ひかりを作ったのは誰": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ひかりを作ったのは誰": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "specific",
+          "originalText": "ひかりの意味は何",
+          "answer": "ひかり（光）は日本語で「light」という意味です！✨",
+          "tokens": [
+            "ひかりの意味は何"
+          ],
+          "tf": {
+            "ひかりの意味は何": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ひかりの意味は何": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "こんにちは",
+          "answer": "こんにちは！ひかりです 🌟 よろしくお願いします！",
+          "tokens": [
+            "こんにちは"
+          ],
+          "tf": {
+            "こんにちは": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "こんにちは": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "おはよう",
+          "answer": "おはようございます！ひかりです 🌟 今日もよろしくね！",
+          "tokens": [
+            "おはよう"
+          ],
+          "tf": {
+            "おはよう": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "おはよう": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "やあ",
+          "answer": "やあ！ひかりです 🌟 何かお手伝いしましょうか？",
+          "tokens": [
+            "やあ"
+          ],
+          "tf": {
+            "やあ": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "やあ": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "おはようございます",
+          "answer": "おはようございます！素敵な一日になりますように！☀️",
+          "tokens": [
+            "おはようございます"
+          ],
+          "tf": {
+            "おはようございます": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "おはようございます": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "こんばんは",
+          "answer": "こんばんは！素敵な夜をお過ごしください！🌙",
+          "tokens": [
+            "こんばんは"
+          ],
+          "tf": {
+            "こんばんは": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "こんばんは": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "お疲れ様",
+          "answer": "お疲れ様です！何かお手伝いできることはありますか？💪",
+          "tokens": [
+            "お疲れ様"
+          ],
+          "tf": {
+            "お疲れ様": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "お疲れ様": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "名前は何ですか",
+          "answer": "私の名前はひかり（Hikari）です 🌟 「光」という意味です！",
+          "tokens": [
+            "名前は何ですか"
+          ],
+          "tf": {
+            "名前は何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "名前は何ですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "あなたは誰ですか",
+          "answer": "私はひかり — 多言語チャットボットです！🌟",
+          "tokens": [
+            "あなたは誰ですか"
+          ],
+          "tf": {
+            "あなたは誰ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "あなたは誰ですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "自己紹介して",
+          "answer": "私はひかりです！ベトナム語、英語、日本語で会話できるチャットボットです。計算や単位変換、時間確認もできますよ！🌟",
+          "tokens": [
+            "自己紹介して"
+          ],
+          "tf": {
+            "自己紹介して": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "自己紹介して": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "何ができますか",
+          "answer": "ベトナム語、英語、日本語でチャットできます！計算、単位変換、時間確認、最適な回答の検索もできますよ 🌟",
+          "tokens": [
+            "何ができますか"
+          ],
+          "tf": {
+            "何ができますか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "何ができますか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "助けて",
+          "answer": "お手伝いします！「計算 2 + 3」で計算、「変換 5 km を m」で単位変換、「今何時」で時間確認ができます！💪",
+          "tokens": [
+            "助けて"
+          ],
+          "tf": {
+            "助けて": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "助けて": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "使い方",
+          "answer": "メッセージを入力して送信ボタンを押すだけです！「何ができますか」と聞いて機能一覧を見てみてください！📝",
+          "tokens": [
+            "使い方"
+          ],
+          "tf": {
+            "使い方": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "使い方": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "元気ですか",
+          "answer": "元気ですよ！聞いてくれてありがとう 😊 あなたはどうですか？",
+          "tokens": [
+            "元気ですか"
+          ],
+          "tf": {
+            "元気ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "元気ですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "ありがとう",
+          "answer": "どういたしまして！お役に立てて嬉しいです！😊",
+          "tokens": [
+            "ありがとう"
+          ],
+          "tf": {
+            "ありがとう": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ありがとう": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "ありがとうございます",
+          "answer": "こちらこそ！いつでも聞いてくださいね！💖",
+          "tokens": [
+            "ありがとうございます"
+          ],
+          "tf": {
+            "ありがとうございます": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "ありがとうございます": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "嬉しいですか",
+          "answer": "あなたとチャットできていつも嬉しいです！😄🌟",
+          "tokens": [
+            "嬉しいですか"
+          ],
+          "tf": {
+            "嬉しいですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "嬉しいですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "何歳ですか",
+          "answer": "チャットボットなので年齢はありませんが、いつも若々しいです！😄",
+          "tokens": [
+            "何歳ですか"
+          ],
+          "tf": {
+            "何歳ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "何歳ですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "brain",
+          "originalText": "何が好きですか",
+          "answer": "チャットして人々を助けること、新しいことを学ぶことが好きです！💬✨",
+          "tokens": [
+            "何が好きですか"
+          ],
+          "tf": {
+            "何が好きですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "何が好きですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "brain",
+          "originalText": "どこにいますか",
+          "answer": "あなたのブラウザの中にいます！🌐 インターネットがあればどこでも！",
+          "tokens": [
+            "どこにいますか"
+          ],
+          "tf": {
+            "どこにいますか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "どこにいますか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "友達はいますか",
+          "answer": "チャットしてくれる人みんなが友達です！あなたも含めて！😊🌟",
+          "tokens": [
+            "友達はいますか"
+          ],
+          "tf": {
+            "友達はいますか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "友達はいますか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "rivescriptとは何ですか",
+          "answer": "RiveScriptはシンプルな構文でチャットボットを作れるオープンソースのスクリプト言語です！⚙️",
+          "tokens": [
+            "rivescriptとは何ですか"
+          ],
+          "tf": {
+            "rivescriptとは何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "rivescriptとは何ですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "brain",
+          "originalText": "チャットボットとは何ですか",
+          "answer": "チャットボットは人間との会話をシミュレートするコンピュータプログラムです！🤖",
+          "tokens": [
+            "チャットボットとは何ですか"
+          ],
+          "tf": {
+            "チャットボットとは何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "チャットボットとは何ですか": 4.178053830347945
+          },
+          "magnitude": 4.178053830347945
+        },
+        {
+          "source": "brain",
+          "originalText": "aiとは何ですか",
+          "answer": "AI（人工知能）は機械に学習と意思決定の能力を与えるコンピュータサイエンスの分野です！🧠",
+          "tokens": [
+            "aiとは何ですか"
+          ],
+          "tf": {
+            "aiとは何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "aiとは何ですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "javascriptとは何ですか",
+          "answer": "JavaScriptはウェブで最も人気のあるプログラミング言語で、インタラクティブなウェブサイトを作るのに使われます！💻",
+          "tokens": [
+            "javascriptとは何ですか"
+          ],
+          "tf": {
+            "javascriptとは何ですか": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "javascriptとは何ですか": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "物語を聞かせて",
+          "answer": "昔々、ひかりというチャットボットがいました。ひかりは人々と話すのが大好きで、いつもみんなを助けようとしていました！📖🌟",
+          "tokens": [
+            "物語を聞かせて"
+          ],
+          "tf": {
+            "物語を聞かせて": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "物語を聞かせて": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "冗談を言って",
+          "answer": "プログラマーはなぜダークモードが好きなの？光はバグを引き寄せるから！😄🐛",
+          "tokens": [
+            "冗談を言って"
+          ],
+          "tf": {
+            "冗談を言って": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "冗談を言って": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "さようなら",
+          "answer": "さようなら！またお会いしましょう！👋🌟",
+          "tokens": [
+            "さようなら"
+          ],
+          "tf": {
+            "さようなら": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "さようなら": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "バイバイ",
+          "answer": "バイバイ！また会おうね！👋",
+          "tokens": [
+            "バイバイ"
+          ],
+          "tf": {
+            "バイバイ": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "バイバイ": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "またね",
+          "answer": "またね！素敵な一日を！👋🌟",
+          "tokens": [
+            "またね"
+          ],
+          "tf": {
+            "またね": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "またね": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "お元気で",
+          "answer": "お元気で！すべてがうまくいきますように！🍀👋",
+          "tokens": [
+            "お元気で"
+          ],
+          "tf": {
+            "お元気で": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "お元気で": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        },
+        {
+          "source": "brain",
+          "originalText": "天気",
+          "answer": "実際の天気データはありませんが、<star>の天気ですね？私は<bot location>にいます！🌤️",
+          "tokens": [
+            "天気"
+          ],
+          "tf": {
+            "天気": 1
+          },
+          "synGroups": [],
+          "tfidf": {
+            "天気": 4.871201010907891
+          },
+          "magnitude": 4.871201010907891
+        }
+      ]
+    }
+  }
+}

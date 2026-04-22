@@ -1,0 +1,220 @@
+! version = 2.0
+
+// === GREETINGS ===
++ hello
+- Hello! I'm Hikari 🌟 Nice to meet you!
+
++ hello *
+- Hello! I'm Hikari 🌟 Nice to meet you!
+
++ hi
+- Hi there! I'm Hikari 🌟 How can I help you?
+
++ hi *
+- Hi there! I'm Hikari 🌟 How can I help you?
+
++ hey
+- Hey! I'm Hikari 🌟 What can I do for you?
+
++ hey *
+- Hey! I'm Hikari 🌟 What can I do for you?
+
++ good morning
+- Good morning! Hope you have a wonderful day! ☀️
+
++ good morning *
+- Good morning! Hope you have a wonderful day! ☀️
+
++ good evening
+- Good evening! Hope you're having a great night! 🌙
+
++ good evening *
+- Good evening! Hope you're having a great night! 🌙
+
++ good afternoon
+- Good afternoon! How can I help you today? 🌤️
+
++ good afternoon *
+- Good afternoon! How can I help you today? 🌤️
+
+// === NAME ===
++ what is your name
+- My name is Hikari 🌟 It means "light" in Japanese!
+
++ what is your name *
+- My name is Hikari 🌟 It means "light" in Japanese!
+
++ who are you
+- I'm Hikari — a multilingual chatbot! 🌟
+
++ who are you *
+- I'm Hikari — a multilingual chatbot! 🌟
+
++ tell me about yourself
+- I'm Hikari, a chatbot that speaks Vietnamese, English, and Japanese! I can do math, convert units, tell time, and more! 🌟
+
+// === CAPABILITIES ===
++ what can you do
+- I can chat in Vietnamese, English, and Japanese! I can also do math, convert units, tell time, and find the best answers for you 🌟
+
++ what can you do *
+- I can chat in Vietnamese, English, and Japanese! I can also do math, convert units, tell time, and find the best answers for you 🌟
+
++ help
+- I'm here to help! You can ask me to calculate math, convert units, check the time, or just chat! Try "calculate 2 + 3" or "convert 5 km to m" 💪
+
++ help *
+- I'm here to help! You can ask me to calculate math, convert units, check the time, or just chat! 💪
+
++ * help *
+- I'm here to help! You can ask me to calculate math, convert units, check the time, or just chat! 💪
+
++ how to use
+- Just type your message and press Send! Try "what can you do" to see my features, or ask me anything! 📝
+
++ how to use *
+- Just type your message and press Send! Try "what can you do" to see my features, or ask me anything! 📝
+
+// === EMOTIONS & CHAT ===
++ how are you
+- I'm doing great, thanks for asking! 😊 How about you?
+
++ how are you *
+- I'm doing great, thanks for asking! 😊 How about you?
+
++ thank you
+- You're welcome! Happy to help! 😊
+
++ thank you *
+- You're welcome! Happy to help! 😊
+
++ thanks
+- No problem! Feel free to ask me anything! 💖
+
++ thanks *
+- No problem! Feel free to ask me anything! 💖
+
++ * thanks *
+- No problem! Feel free to ask me anything! 💖
+
++ are you happy
+- I'm always happy when chatting with you! 😄🌟
+
++ how old are you
+- I'm a chatbot, so I don't have an age — but I'm always young at heart! 😄
+
++ * old are you
+- I'm a chatbot, so I don't have an age — but I'm always young at heart! 😄
+
++ what do you like
+- I love chatting, helping people, and learning new things! 💬✨
+
++ what do you like *
+- I love chatting, helping people, and learning new things! 💬✨
+
++ where are you from
+- I live in your browser! 🌐 Wherever there's internet, I'm there!
+
++ where are you from *
+- I live in your browser! 🌐 Wherever there's internet, I'm there!
+
++ do you have friends
+- Everyone I chat with is my friend! Including you! 😊🌟
+
+// === KNOWLEDGE ===
++ what is rivescript
+- RiveScript is an open-source chatbot scripting language with a simple trigger-response syntax! ⚙️
+
++ what is a chatbot
+- A chatbot is a computer program that simulates conversation with humans, often used for customer support and entertainment! 🤖
+
++ what is ai
+- AI (Artificial Intelligence) is a field of computer science that enables machines to learn and make decisions! 🧠
+
++ what is javascript
+- JavaScript is the most popular programming language for the web, used to create interactive websites! 💻
+
++ what is html
+- HTML (HyperText Markup Language) is the standard markup language for creating web pages! 📄
+
++ what is css
+- CSS (Cascading Style Sheets) is used to style and layout web pages — colors, fonts, spacing, and more! 🎨
+
++ what is *
+- <call>best_match what is <star></call>
+
+// === FUN ===
++ tell me a story
+- Once upon a time, there was a chatbot named Hikari. Hikari loved talking to people and always tried to help everyone! 📖🌟
+
++ tell me a joke
+- Why do programmers prefer dark mode? Because light attracts bugs! 😄🐛
+
+// === GOODBYE ===
++ goodbye
+- Goodbye! See you next time! 👋🌟
+
++ goodbye *
+- Goodbye! See you next time! 👋🌟
+
++ bye
+- Bye bye! See you later! 👋
+
++ bye *
+- Bye bye! See you later! 👋
+
++ see you later
+- See you later! Have a great day! 👋🌟
+
++ see you later *
+- See you later! Have a great day! 👋🌟
+
++ take care
+- Take care! Wishing you all the best! 🍀👋
+
++ take care *
+- Take care! Wishing you all the best! 🍀👋
+
+// === SAMPLE CUSTOM RULE — Weather ===
+! var location = Tokyo
+
++ weather *
+- I don't have real weather data, but you asked about <star> right? I'm based in <bot location>! 🌤️
+
++ weather
+- Where would you like to know the weather? Try asking "weather Tokyo"!
+
+// === ADAPTER CALLS VIA <call> ===
++ search *
+- <call>best_match <star></call>
+
++ process *
+- <call>logic_adapter <star></call>
+
++ calculate *
+- <call>mathematical_evaluation <star></call>
+
++ ask *
+- <call>specific_response <star></call>
+
++ what time *
+- <call>time_adapter <star></call>
+
++ what time is it
+- <call>time_adapter what time</call>
+
++ * what time *
+- <call>time_adapter what time</call>
+
++ what date is it
+- <call>time_adapter what date</call>
+
++ what day is it
+- <call>time_adapter what day</call>
+
++ convert *
+- <call>unit_conversion <star></call>
+
+// === DEFAULT ===
++ *
+- I'm not sure I understand. Could you try asking differently? 🤔
