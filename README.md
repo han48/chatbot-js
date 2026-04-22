@@ -6,6 +6,8 @@ Chatbot tĩnh đa ngôn ngữ chạy hoàn toàn trên trình duyệt, sử dụ
 
 **Demo:** Mở `index.html` qua bất kỳ static server nào.
 
+Online demo: [huggingface](https://huggingface.co/spaces/mr4/chatbot-js)
+
 ## Tính năng
 
 - 💬 Hội thoại 3 ngôn ngữ: Tiếng Việt, English, 日本語
