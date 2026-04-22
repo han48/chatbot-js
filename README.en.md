@@ -6,6 +6,8 @@ A multilingual static chatbot running entirely in the browser, powered by [RiveS
 
 **Demo:** Open `index.html` via any static server.
 
+Online demo: [huggingface](https://huggingface.co/spaces/mr4/chatbot-js)
+
 ## Features
 
 - 💬 3-language conversation: Vietnamese, English, Japanese
