@@ -129,7 +129,6 @@ Hikari supports a hybrid approach: point `FALLBACK_API_URL` to an LLM API — ru
 
 ## Docs
 
-- [Technical Design](TECHNICAL_DESIGN.md)
 - [Spec](/.kiro/specs/hikari-chatbot/)
 
 ## License

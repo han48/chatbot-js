@@ -129,7 +129,6 @@ Hikariはハイブリッドアプローチをサポート: `FALLBACK_API_URL`を
 
 ## ドキュメント
 
-- [テクニカルデザイン](TECHNICAL_DESIGN.md)
 - [仕様書](/.kiro/specs/hikari-chatbot/)
 
 ## ライセンス
