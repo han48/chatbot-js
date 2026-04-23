@@ -576,15 +576,21 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
 - [x] 28. Triển khai Voice Adapter
   - [x] 28.1 Tạo `adapters/voice-adapter.js`
     - Khai báo `SPEECH_LOCALE_MAP` — ánh xạ `vi → vi-VN`, `en → en-US`, `ja → ja-JP`
-    - Viết `initVoiceAdapter()` — kiểm tra `SpeechRecognition` và `SpeechSynthesis` support, trả về `{sttSupported, ttsSupported}`
+    - Khai báo `WHISPER_LANG_MAP` — ánh xạ `vi → vietnamese`, `en → english`, `ja → japanese`
+    - Khai báo `WHISPER_MODEL_ID = 'onnx-community/whisper-base'` — model nhỏ, đa ngôn ngữ
+    - Viết `initVoiceAdapter()` — kiểm tra `MediaRecorder` (STT) và `SpeechSynthesis` (TTS) support, trả về `{sttSupported, ttsSupported}`
     - Viết `getVoicesForLang(lang)` — lấy `speechSynthesis.getVoices()`, filter theo locale prefix, sort ưu tiên `localService: true`
     - Viết `getDefaultVoice(lang)` — trả về voice tốt nhất (localService trước, rồi theo thứ tự danh sách)
-    - Viết `startVoiceInput(lang, onInterim, onFinal)` — tạo `SpeechRecognition` với `lang`, `continuous: false`, `interimResults: true`; gọi `onInterim(text)` khi có interim result, `onFinal(text)` khi có final result
-    - Viết `stopVoiceInput()` — gọi `recognition.stop()`
-    - Viết `isVoiceInputActive()` — trả về trạng thái đang nghe
+    - Viết `_getWhisperPipeline(onStatus)` — lazy-load Whisper pipeline qua dynamic `import()` từ CDN (giống llm-adapter.js), cache singleton, gọi `onStatus(message)` khi loading
+    - Viết `_audioBufferToFloat32(audioBuffer)` — convert AudioBuffer → Float32Array 16kHz mono (resample nếu cần)
+    - Viết `_decodeAudioBlob(audioBlob)` — decode audio Blob → Float32Array qua `AudioContext.decodeAudioData()`
+    - Viết `startVoiceInput(lang, onInterim, onFinal, onError)` — thu âm bằng `MediaRecorder`, gọi `onInterim('🎤 Đang nghe...')` khi bắt đầu, sau khi dừng transcribe bằng Whisper ONNX, gọi `onFinal(text)` hoặc `onError(err)`; tự dừng sau 10 giây
+    - Viết `stopVoiceInput()` — gọi `mediaRecorder.stop()` sớm (trigger onstop → transcribe)
+    - Viết `isVoiceInputActive()` — trả về trạng thái đang thu âm
     - Viết `speakText(text, lang, voiceName?)` — tạo `SpeechSynthesisUtterance`, set voice theo `voiceName` hoặc `getDefaultVoice(lang)`, gọi `speechSynthesis.speak()`
     - Viết `stopSpeaking()` — gọi `speechSynthesis.cancel()`
     - Viết `isSpeaking()` — trả về `speechSynthesis.speaking`
+    - Expose `window._voiceAdapterStartVoiceInput` và `window._voiceAdapterStopVoiceInput` — alias private để app.js gọi tránh đệ quy
     - Export qua `globalThis` cho Node/test (stub functions)
     - _Yêu cầu: 39.2, 39.4, 39.9, 40.1, 40.3, 40.4, 40.7, 40.8_
 
