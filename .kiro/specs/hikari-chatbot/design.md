@@ -741,7 +741,101 @@ Khi confidence < 50%, hệ thống áp dụng smart fallback theo thứ tự:
 | 1 | bestMatchAdapter(input gốc) | Kết quả không hợp lệ |
 | 2 | bestMatchAdapter(input bỏ dấu) — chỉ tiếng Việt | Kết quả không hợp lệ |
 | 3 | Fallback API (HTTP POST, timeout 5s) | API thất bại |
-| 4 | Hiển thị phản hồi mặc định RiveScript + thông báo lỗi | — |
+| 4 | LLM Adapter (WebGPU, streaming) | LLM thất bại hoặc không khả dụng |
+| 5 | Hiển thị getFinalFallbackMessage() + thông tin lỗi LLM | — |
+
+### IndexedDB Schema
+
+Database `HikariChatHistory` gồm 2 object stores:
+
+```javascript
+// Object store: messages
+{
+    id: number,          // autoIncrement PK
+    role: 'user' | 'assistant',
+    content: string,
+    lang: 'vi' | 'en' | 'ja',
+    timestamp: number    // Date.now()
+}
+// Index: timestamp
+
+// Object store: attachments
+{
+    id: number,          // autoIncrement PK
+    messageId: number,   // FK → messages.id
+    fileName: string,
+    fileType: string,    // MIME type, e.g. "image/png"
+    fileSize: number,    // bytes
+    data: ArrayBuffer,   // binary content (không phải base64 — tiết kiệm ~33% dung lượng)
+    timestamp: number
+}
+// Index: messageId
+```
+
+**Lý do dùng ArrayBuffer thay vì base64:** IndexedDB hỗ trợ lưu binary data trực tiếp, tiết kiệm ~33% dung lượng so với base64. Khi cần hiển thị, dùng `attachmentToDataURL()` để convert sang data URL.
+
+### Interaction Mode — 4 chế độ tương tác
+
+| Chế độ | Input | Output | API cần thiết | Badge |
+|---|---|---|---|---|
+| Text → Text | Gõ bàn phím | Hiển thị text | — | 📝→📝 |
+| Text → Voice | Gõ bàn phím | TTS đọc to | SpeechSynthesis | 📝→🔊 |
+| Voice → Text | STT nhận diện | Hiển thị text | SpeechRecognition | 🎤→📝 |
+| Voice → Voice | STT nhận diện | TTS đọc to | SpeechRecognition + SpeechSynthesis | 🎤→🔊 |
+
+**Quyết định thiết kế:**
+
+| Quyết định | Lựa chọn | Lý do |
+|---|---|---|
+| STT API | Web Speech API (`SpeechRecognition`) | Native browser API, không cần server, hỗ trợ vi-VN/en-US/ja-JP |
+| TTS API | Web Speech API (`SpeechSynthesis`) | Native browser API, hỗ trợ local voices (tự nhiên hơn) |
+| Voice selection | Filter theo `lang` prefix, ưu tiên `localService: true` | Local voices tự nhiên hơn online voices; filter tránh chọn nhầm ngôn ngữ |
+| STT mode | `continuous: false`, `interimResults: true` | Nhận diện 1 câu rồi dừng, tránh gửi liên tiếp; interim results cho UX tốt hơn |
+| Voice → Voice feedback loop | `stopSpeaking()` trước khi `startVoiceInput()` | Tránh microphone thu âm lại giọng TTS |
+| TTS timing | Đọc sau `finalizeStreamingMessage()` | Không đọc từng token streaming, đọc toàn bộ câu trả lời hoàn chỉnh |
+| Interaction mode storage | Biến `_interactionMode` trong `app.js` | Không cần persist, reset về Text→Text khi reload là hợp lý |
+
+### Language → Speech Locale Mapping
+
+```javascript
+var SPEECH_LOCALE_MAP = {
+    vi: 'vi-VN',
+    en: 'en-US',
+    ja: 'ja-JP'
+};
+```
+
+### Voice Module — `adapters/voice-adapter.js`
+
+Tách thành file riêng để giữ separation of concerns:
+
+| Hàm | Mô tả | Tham số | Trả về |
+|---|---|---|---|
+| `initVoiceAdapter()` | Kiểm tra browser support, khởi tạo SpeechRecognition và SpeechSynthesis | — | `{sttSupported, ttsSupported}` |
+| `startVoiceInput(lang, onInterim, onFinal)` | Bắt đầu STT với locale tương ứng | `lang: string`, callbacks | `void` |
+| `stopVoiceInput()` | Dừng STT | — | `void` |
+| `isVoiceInputActive()` | Kiểm tra STT đang chạy | — | `boolean` |
+| `speakText(text, lang, voiceName?)` | Đọc text bằng TTS với voice đã chọn | `text: string`, `lang: string`, `voiceName?: string` | `void` |
+| `stopSpeaking()` | Dừng TTS ngay lập tức | — | `void` |
+| `isSpeaking()` | Kiểm tra TTS đang phát | — | `boolean` |
+| `getVoicesForLang(lang)` | Lấy danh sách voices phù hợp với ngôn ngữ, ưu tiên localService | `lang: string` | `SpeechSynthesisVoice[]` |
+| `getDefaultVoice(lang)` | Lấy voice mặc định tốt nhất cho ngôn ngữ | `lang: string` | `SpeechSynthesisVoice \| null` |
+
+### Interaction Mode trong `app.js`
+
+Biến và hàm quản lý chế độ tương tác:
+
+```javascript
+var _interactionMode = 'text-text'; // 'text-text' | 'text-voice' | 'voice-text' | 'voice-voice'
+var _selectedVoiceName = null;       // Tên voice TTS đã chọn
+
+function setInteractionMode(mode)    // Cập nhật mode, toggle UI elements
+function getInteractionMode()        // Trả về mode hiện tại
+function isVoiceInputEnabled()       // mode includes 'voice-...'
+function isVoiceOutputEnabled()      // mode includes '...-voice'
+function onBotReplyReady(text)       // Gọi speakText() nếu voice output enabled
+function updateVoiceSelector(lang)   // Cập nhật #tts-voice-select theo ngôn ngữ
+```
 
 
 ## Thuộc tính Đúng đắn (Correctness Properties)
@@ -1184,6 +1278,9 @@ Mỗi property test tham chiếu đến thuộc tính đúng đắn tương ứn
 | Property 35 | `Feature: hikari-chatbot, Property 35: getMessagesPage phân trang nhất quán` | `fc.tuple(fc.integer({min:1}), fc.integer({min:1, max:50}))` | `totalPages = ceil(total/pageSize)`, `messages.length ≤ pageSize` |
 | Property 36 | `Feature: hikari-chatbot, Property 36: Streaming callback tích lũy đúng` | `fc.array(fc.string(), {minLength: 1})` | Text tích lũy sau k token = concat(t1..tk) |
 | Property 37 | `Feature: hikari-chatbot, Property 37: Fallback chain luôn trả về không rỗng` | `fc.constantFrom('vi','en','ja')` | `getFinalFallbackMessage()` trả về chuỗi không rỗng |
+| Property 38 | `Feature: hikari-chatbot, Property 38: attachmentToDataURL format hợp lệ` | `fc.constantFrom('image/png','image/jpeg','image/gif')` × `fc.uint8Array({minLength:1})` | Data URL bắt đầu bằng `data:<fileType>;base64,` |
+| Property 39 | `Feature: hikari-chatbot, Property 39: getVoicesForLang chỉ trả về voices đúng ngôn ngữ` | `fc.constantFrom('vi','en','ja')` | Mọi voice trong kết quả có `lang` prefix khớp với SPEECH_LOCALE_MAP[lang] |
+| Property 40 | `Feature: hikari-chatbot, Property 40: Interaction mode hợp lệ` | `fc.constantFrom('text-text','text-voice','voice-text','voice-voice')` | `isVoiceInputEnabled()` = mode.startsWith('voice'); `isVoiceOutputEnabled()` = mode.endsWith('voice') |
 
 ### Cấu hình Property Tests
 

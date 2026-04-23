@@ -586,3 +586,75 @@ Dữ liệu hội thoại (Brain Data) được lưu trong các tệp `.rive` ri
 1. THE `appendMessage(text, sender, confidence, adapterPath, responseTime, imageDataURL)` SHALL chấp nhận tham số tùy chọn `imageDataURL` để hiển thị ảnh đính kèm trong tin nhắn user
 2. WHEN `imageDataURL` được cung cấp và sender là "user", THE `appendMessage()` SHALL render thẻ `<img>` với src là imageDataURL trong tin nhắn
 3. THE CSS SHALL định dạng `.message-image` với kích thước phù hợp (max-width, border-radius) để hiển thị ảnh trong tin nhắn
+
+### Yêu cầu 38: IndexedDB Attachment Storage (Lưu trữ file đính kèm)
+
+**User Story:** Là một người dùng, tôi muốn file đính kèm được lưu persistent cùng với lịch sử chat trong IndexedDB, để tôi có thể xem lại ảnh đã gửi khi mở lại lịch sử.
+
+#### Tiêu chí chấp nhận
+
+1. THE `data/chat-history-db.js` SHALL bao gồm object store riêng `attachments` (keyPath: `id`, autoIncrement) với các trường: `messageId` (FK tham chiếu `messages.id`), `fileName`, `fileType`, `fileSize`, `data` (ArrayBuffer), `timestamp`
+2. THE module SHALL cung cấp hàm `saveAttachment(messageId, file)` nhận `File` object, đọc nội dung dưới dạng `ArrayBuffer` và lưu vào store `attachments`
+3. THE module SHALL cung cấp hàm `getAttachment(attachmentId)` trả về record attachment kèm `data` (ArrayBuffer)
+4. THE module SHALL cung cấp hàm `getAttachmentByMessageId(messageId)` trả về attachment tương ứng với một tin nhắn
+5. WHEN hiển thị attachment từ IndexedDB, THE module SHALL cung cấp hàm `attachmentToDataURL(attachment)` chuyển đổi `ArrayBuffer` thành data URL (`data:<fileType>;base64,...`) để render trong `<img>`
+6. THE module SHALL cung cấp hàm `clearAllAttachments()` để xóa toàn bộ attachments
+7. THE `saveChatMessage()` SHALL được mở rộng thành `saveChatMessage(role, content, lang, file?)` — nếu có `file`, tự động gọi `saveAttachment()` sau khi lưu message và trả về `{messageId, attachmentId}`
+8. IF `ArrayBuffer` không khả dụng (môi trường Node/test), THEN THE module SHALL gracefully degrade với stub functions
+
+### Yêu cầu 39: Voice Input — Speech to Text (Nhập liệu bằng giọng nói)
+
+**User Story:** Là một người dùng, tôi muốn có thể nhập tin nhắn bằng giọng nói thay vì gõ bàn phím, để tương tác với chatbot tự nhiên và tiện lợi hơn.
+
+#### Tiêu chí chấp nhận
+
+1. THE Chat_Interface SHALL bao gồm nút microphone (`#voice-input-button`) trong input area để bật/tắt chế độ nhận diện giọng nói
+2. THE Hikari_Chatbot SHALL sử dụng Web Speech API (`SpeechRecognition` hoặc `webkitSpeechRecognition`) để nhận diện giọng nói trực tiếp trên trình duyệt, không cần server
+3. WHEN người dùng nhấn nút microphone, THE Hikari_Chatbot SHALL bắt đầu lắng nghe và hiển thị trạng thái đang nghe (nút đổi màu/animation)
+4. THE ngôn ngữ nhận diện giọng nói SHALL được đặt tự động theo `currentLang` của Language_Selector: `vi` → `vi-VN`, `en` → `en-US`, `ja` → `ja-JP`
+5. WHEN nhận diện xong một câu, THE Hikari_Chatbot SHALL điền kết quả vào `#message-input` và tự động gửi tin nhắn
+6. THE Hikari_Chatbot SHALL hỗ trợ chế độ `continuous: false` (nhận diện một câu rồi dừng) để tránh gửi nhiều tin nhắn liên tiếp không mong muốn
+7. IF trình duyệt không hỗ trợ Web Speech API, THEN THE nút microphone SHALL bị ẩn hoặc vô hiệu hóa với tooltip giải thích
+8. WHEN đang nhận diện giọng nói, THE Chat_Interface SHALL hiển thị interim results (kết quả tạm thời) trong input field để người dùng thấy đang nhận diện
+9. THE Hikari_Chatbot SHALL cung cấp hàm `startVoiceInput()` và `stopVoiceInput()` để bắt đầu/dừng nhận diện
+10. WHEN tính năng Voice Input bị tắt trong Settings, THE nút microphone SHALL bị ẩn
+
+### Yêu cầu 40: Voice Output — Text to Speech (Chatbot trả lời bằng giọng nói)
+
+**User Story:** Là một người dùng, tôi muốn chatbot đọc to phản hồi bằng giọng nói, để tôi có thể nghe câu trả lời mà không cần nhìn màn hình.
+
+#### Tiêu chí chấp nhận
+
+1. THE Hikari_Chatbot SHALL sử dụng Web Speech API (`SpeechSynthesis`) để đọc phản hồi của bot bằng giọng nói, không cần server
+2. WHEN tính năng Voice Output được bật và bot có phản hồi mới, THE Hikari_Chatbot SHALL tự động đọc nội dung phản hồi qua `speechSynthesis.speak()`
+3. THE ngôn ngữ đọc SHALL khớp với `currentLang`: `vi` → `vi-VN`, `en` → `en-US`, `ja` → `ja-JP`
+4. THE giọng đọc SHALL được chọn từ danh sách voices được lọc theo ngôn ngữ hiện tại, ưu tiên voice có `localService: true` (giọng tự nhiên cài sẵn trên thiết bị) trước voices online
+5. THE Settings Panel SHALL bao gồm dropdown `#tts-voice-select` hiển thị danh sách voices phù hợp với ngôn ngữ hiện tại, cho phép người dùng chọn voice ưa thích
+6. WHEN ngôn ngữ thay đổi qua Language_Selector, THE `#tts-voice-select` SHALL tự động cập nhật danh sách voices và chọn lại voice mặc định phù hợp
+7. THE Hikari_Chatbot SHALL cung cấp hàm `speakText(text, lang)` để đọc một chuỗi văn bản với ngôn ngữ và voice đã chọn
+8. THE Hikari_Chatbot SHALL cung cấp hàm `stopSpeaking()` để dừng đọc ngay lập tức
+9. WHEN LLM đang streaming, THE Hikari_Chatbot SHALL chờ đến khi `finalizeStreamingMessage()` hoàn tất rồi mới đọc toàn bộ phản hồi (không đọc từng token)
+10. IF trình duyệt không hỗ trợ `SpeechSynthesis`, THEN THE tính năng Voice Output SHALL bị vô hiệu hóa và ẩn khỏi Settings
+11. THE Settings Panel SHALL bao gồm toggle `#voice-output-toggle` để bật/tắt tính năng Voice Output
+12. THE Settings Panel SHALL bao gồm toggle `#voice-input-toggle` để bật/tắt tính năng Voice Input
+
+### Yêu cầu 41: Interaction Mode — 4 chế độ tương tác
+
+**User Story:** Là một người dùng, tôi muốn chọn chế độ tương tác phù hợp với nhu cầu của mình, bao gồm 4 kết hợp giữa text/voice cho input và output, để có trải nghiệm linh hoạt nhất.
+
+#### Tiêu chí chấp nhận
+
+1. THE Hikari_Chatbot SHALL hỗ trợ 4 chế độ tương tác (Interaction_Mode):
+   - **Text → Text** (mặc định): người dùng gõ text, bot trả lời text — không cần Web Speech API
+   - **Text → Voice**: người dùng gõ text, bot trả lời bằng giọng nói (TTS) — cần SpeechSynthesis
+   - **Voice → Text**: người dùng nói, bot trả lời text (STT) — cần SpeechRecognition
+   - **Voice → Voice**: người dùng nói, bot trả lời bằng giọng nói (STT + TTS) — cần cả hai
+2. THE Settings Panel SHALL bao gồm bộ chọn chế độ (`#interaction-mode-select` hoặc 4 radio buttons) để người dùng chọn một trong 4 Interaction_Mode
+3. WHEN Interaction_Mode thay đổi, THE Chat_Interface SHALL cập nhật trạng thái hiển thị: ẩn/hiện nút microphone (`#voice-input-button`) và bật/tắt TTS tự động
+4. WHEN Interaction_Mode là "Voice → Text" hoặc "Voice → Voice", THE nút microphone SHALL hiển thị và sẵn sàng nhận input
+5. WHEN Interaction_Mode là "Text → Voice" hoặc "Voice → Voice", THE Hikari_Chatbot SHALL tự động gọi `speakText()` sau mỗi phản hồi bot
+6. WHEN Interaction_Mode là "Text → Text" hoặc "Voice → Text", THE Hikari_Chatbot SHALL KHÔNG tự động gọi `speakText()`
+7. THE Interaction_Mode mặc định SHALL là "Text → Text" khi trang web được tải lần đầu
+8. IF một chế độ yêu cầu API không được hỗ trợ (SpeechRecognition hoặc SpeechSynthesis), THEN THE chế độ đó SHALL bị vô hiệu hóa trong bộ chọn với tooltip giải thích lý do
+9. WHEN Interaction_Mode là "Voice → Voice", THE Hikari_Chatbot SHALL dừng TTS đang phát (`stopSpeaking()`) trước khi bắt đầu lắng nghe STT để tránh feedback loop
+10. THE Chat_Interface SHALL hiển thị badge/indicator nhỏ cho biết chế độ hiện tại (ví dụ: 🎤→📝, 📝→🔊, 🎤→🔊, 📝→📝)

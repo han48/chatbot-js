@@ -554,6 +554,103 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
 - [x] 26. Checkpoint cuối — Đảm bảo tất cả test pass
   - Đảm bảo tất cả test pass sau khi tích hợp các tính năng mới.
 
+- [ ] 27. Mở rộng IndexedDB — Attachment Storage
+  - [ ] 27.1 Cập nhật `data/chat-history-db.js` — thêm object store `attachments`
+    - Tăng `CHAT_HISTORY_DB_VERSION` lên 2, thêm migration trong `onupgradeneeded`
+    - Tạo object store `attachments` (keyPath: `id`, autoIncrement) với index `messageId`
+    - Viết `saveAttachment(messageId, file)` — đọc `File` thành `ArrayBuffer` qua `FileReader`, lưu vào store
+    - Viết `getAttachment(attachmentId)` — lấy record attachment theo id
+    - Viết `getAttachmentByMessageId(messageId)` — lấy attachment theo messageId
+    - Viết `attachmentToDataURL(attachment)` — convert `ArrayBuffer` → base64 data URL để render `<img>`
+    - Viết `clearAllAttachments()` — xóa toàn bộ store attachments
+    - Cập nhật `saveChatMessage(role, content, lang, file?)` — nếu có `file`, gọi `saveAttachment()` sau khi lưu message
+    - Cập nhật stub functions cho Node/test environment
+    - _Yêu cầu: 38.1–38.8_
+
+  - [ ] 27.2 Tích hợp attachment storage vào `app.js`
+    - Cập nhật `addChatHistory(role, content, file?)` — truyền `file` xuống `saveChatMessage()`
+    - Cập nhật `sendMessage()` — khi có ảnh đính kèm, truyền `File` object vào `addChatHistory()`
+    - Cập nhật `_loadHistoryPage()` trong History Dialog — với mỗi message có attachment, gọi `getAttachmentByMessageId()` và render thumbnail
+    - _Yêu cầu: 38.7_
+
+- [ ] 28. Triển khai Voice Adapter
+  - [ ] 28.1 Tạo `adapters/voice-adapter.js`
+    - Khai báo `SPEECH_LOCALE_MAP` — ánh xạ `vi → vi-VN`, `en → en-US`, `ja → ja-JP`
+    - Viết `initVoiceAdapter()` — kiểm tra `SpeechRecognition` và `SpeechSynthesis` support, trả về `{sttSupported, ttsSupported}`
+    - Viết `getVoicesForLang(lang)` — lấy `speechSynthesis.getVoices()`, filter theo locale prefix, sort ưu tiên `localService: true`
+    - Viết `getDefaultVoice(lang)` — trả về voice tốt nhất (localService trước, rồi theo thứ tự danh sách)
+    - Viết `startVoiceInput(lang, onInterim, onFinal)` — tạo `SpeechRecognition` với `lang`, `continuous: false`, `interimResults: true`; gọi `onInterim(text)` khi có interim result, `onFinal(text)` khi có final result
+    - Viết `stopVoiceInput()` — gọi `recognition.stop()`
+    - Viết `isVoiceInputActive()` — trả về trạng thái đang nghe
+    - Viết `speakText(text, lang, voiceName?)` — tạo `SpeechSynthesisUtterance`, set voice theo `voiceName` hoặc `getDefaultVoice(lang)`, gọi `speechSynthesis.speak()`
+    - Viết `stopSpeaking()` — gọi `speechSynthesis.cancel()`
+    - Viết `isSpeaking()` — trả về `speechSynthesis.speaking`
+    - Export qua `globalThis` cho Node/test (stub functions)
+    - _Yêu cầu: 39.2, 39.4, 39.9, 40.1, 40.3, 40.4, 40.7, 40.8_
+
+- [ ] 29. Triển khai Voice Input (STT) trong `app.js`
+  - [ ] 29.1 Thêm UI Voice Input vào `index.html`
+    - Thêm `#voice-input-button` (nút microphone 🎤) vào input area, ẩn mặc định
+    - Thêm CSS class `.voice-listening` (animation pulse) cho trạng thái đang nghe
+    - _Yêu cầu: 39.1, 39.3_
+
+  - [ ] 29.2 Triển khai Voice Input logic trong `app.js`
+    - Viết `startVoiceInput()` — gọi `voiceAdapter.startVoiceInput()`, cập nhật UI nút (thêm `.voice-listening`), điền interim results vào `#message-input`
+    - Viết `stopVoiceInput()` — gọi `voiceAdapter.stopVoiceInput()`, xóa `.voice-listening`
+    - Trong `onFinal` callback: điền text vào input, gọi `sendMessage()` tự động
+    - Gắn event listener: `#voice-input-button` click → toggle `startVoiceInput()`/`stopVoiceInput()`
+    - IF `sttSupported = false`: ẩn `#voice-input-button`
+    - _Yêu cầu: 39.3, 39.5, 39.6, 39.7, 39.8, 39.9_
+
+- [ ] 30. Triển khai Voice Output (TTS) trong `app.js`
+  - [ ] 30.1 Thêm UI Voice Output vào Settings Panel
+    - Thêm `#voice-output-toggle` (checkbox) vào Settings Panel
+    - Thêm `#voice-input-toggle` (checkbox) vào Settings Panel
+    - Thêm `#tts-voice-select` (dropdown) vào Settings Panel
+    - IF `ttsSupported = false`: ẩn toàn bộ TTS controls
+    - _Yêu cầu: 40.5, 40.10, 40.11, 40.12_
+
+  - [ ] 30.2 Triển khai TTS logic trong `app.js`
+    - Viết `speakText(text, lang)` — gọi `voiceAdapter.speakText()` với voice từ `_selectedVoiceName`
+    - Viết `stopSpeaking()` — gọi `voiceAdapter.stopSpeaking()`
+    - Viết `updateVoiceSelector(lang)` — populate `#tts-voice-select` với `getVoicesForLang(lang)`, chọn `getDefaultVoice(lang)` mặc định
+    - Viết `onBotReplyReady(text)` — gọi `speakText()` nếu `isVoiceOutputEnabled()`
+    - Gắn event listener: `#tts-voice-select` change → cập nhật `_selectedVoiceName`; `speechSynthesis.onvoiceschanged` → `updateVoiceSelector(currentLang)`
+    - Cập nhật `appendMessage()` và `finalizeStreamingMessage()` — gọi `onBotReplyReady(text)` sau khi hiển thị
+    - _Yêu cầu: 40.2, 40.6, 40.7, 40.8, 40.9_
+
+- [ ] 31. Triển khai Interaction Mode (4 chế độ tương tác)
+  - [ ] 31.1 Thêm UI Interaction Mode vào Settings Panel
+    - Thêm `#interaction-mode-select` (select dropdown hoặc radio group) với 4 options: `text-text`, `text-voice`, `voice-text`, `voice-voice`
+    - Thêm `#interaction-mode-badge` (indicator nhỏ trong header) hiển thị badge chế độ hiện tại
+    - Vô hiệu hóa các option cần API không được hỗ trợ
+    - _Yêu cầu: 41.2, 41.8, 41.10_
+
+  - [ ] 31.2 Triển khai Interaction Mode logic trong `app.js`
+    - Khai báo `_interactionMode = 'text-text'` và `_selectedVoiceName = null`
+    - Viết `setInteractionMode(mode)` — cập nhật `_interactionMode`, toggle hiển thị `#voice-input-button`, bật/tắt TTS auto-speak, cập nhật badge
+    - Viết `getInteractionMode()`, `isVoiceInputEnabled()`, `isVoiceOutputEnabled()`
+    - Gắn event listener: `#interaction-mode-select` change → `setInteractionMode()`
+    - Cập nhật `changeLanguage()` — gọi `updateVoiceSelector(lang)` khi đổi ngôn ngữ
+    - Xử lý Voice → Voice feedback loop: trong `startVoiceInput()`, gọi `stopSpeaking()` trước
+    - _Yêu cầu: 41.1–41.10_
+
+- [ ] 32. Cập nhật `index.html` và `style.css` cho Voice + Interaction Mode
+  - [ ] 32.1 Cập nhật `index.html`
+    - Thêm thẻ `<script>` tải `adapters/voice-adapter.js` trước `app.js`
+    - Thêm `#voice-input-button`, `#interaction-mode-select`, `#interaction-mode-badge`, `#voice-output-toggle`, `#voice-input-toggle`, `#tts-voice-select` vào đúng vị trí
+    - _Yêu cầu: 39.1, 40.5, 41.2, 41.10_
+
+  - [ ] 32.2 Cập nhật `style.css`
+    - Thêm `.voice-listening` — animation pulse cho nút microphone khi đang nghe
+    - Thêm `#voice-input-button` — styling nút microphone
+    - Thêm `#interaction-mode-badge` — badge nhỏ hiển thị chế độ hiện tại
+    - Thêm `#tts-voice-select` — styling dropdown chọn voice
+    - _Yêu cầu: 39.3, 41.10_
+
+- [ ] 33. Checkpoint — Đảm bảo tất cả test pass
+  - Đảm bảo tất cả test pass sau khi tích hợp Voice + Interaction Mode.
+
 ## Ghi chú
 
 - Các task đánh dấu `*` là tùy chọn và có thể bỏ qua để triển khai MVP nhanh hơn
@@ -583,7 +680,8 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
   ├── logic-dispatcher.js   — Logic adapter dispatcher
   ├── adapter-registry.js   — Adapter metadata, display names, registration (includes web_search, llm_adapter)
   ├── web-search.js         — Web search via DuckDuckGo + Google
-  └── llm-adapter.js        — LLM Adapter (WebGPU, Transformers.js, Qwen3.5-0.8B, streaming, multimodal)
+  ├── llm-adapter.js        — LLM Adapter (WebGPU, Transformers.js, Qwen3.5-0.8B, streaming, multimodal)
+  └── voice-adapter.js      — Voice Adapter (STT via SpeechRecognition, TTS via SpeechSynthesis)
   scripts/
   └── preprocess.js         — Build script: generates data/preprocessed.json
   data/
@@ -592,5 +690,5 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
   ├── qa-dataset.json
   ├── adapter-registry.json — Includes web_search and llm_adapter entries
   ├── help-content.json
-  └── chat-history-db.js    — IndexedDB module for persistent chat history
+  └── chat-history-db.js    — IndexedDB module (messages + attachments stores)
   ```
