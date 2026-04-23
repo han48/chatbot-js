@@ -8,18 +8,18 @@ function bestMatchAdapter(rs, args) {
     _adapterPath.push('best_match');
     var input = (args || []).join(' ').trim();
     var lang = currentLang || 'vi';
-    var threshold = 0.3;
+    var threshold = 0.55;
 
     if (input.length === 0) {
-        if (lang === 'en') return 'Please provide a question to search for.';
-        if (lang === 'ja') return '検索する質問を入力してください。';
-        return 'Vui lòng nhập câu hỏi để tìm kiếm.';
+        if (lang === 'en') return { answer: 'Please provide a question to search for.', score: 0 };
+        if (lang === 'ja') return { answer: '検索する質問を入力してください。', score: 0 };
+        return { answer: 'Vui lòng nhập câu hỏi để tìm kiếm.', score: 0 };
     }
 
     // Thử dùng preprocessed data trước (nhanh hơn)
     if (typeof findBestMatchPreprocessed === 'function') {
         var ppResult = findBestMatchPreprocessed(input, lang, threshold);
-        if (ppResult) return ppResult.answer;
+        if (ppResult) return { answer: ppResult.answer, score: ppResult.score || threshold };
     }
 
     // Fallback: tính similarity thủ công từ QA_DATASET
@@ -45,11 +45,11 @@ function bestMatchAdapter(rs, args) {
         }
     }
 
-    if (bestScore >= threshold) return bestAnswer;
+    if (bestScore >= threshold) return { answer: bestAnswer, score: bestScore };
 
-    if (lang === 'en') return 'Sorry, I could not find a suitable answer for your question.';
-    if (lang === 'ja') return '申し訳ありませんが、ご質問に適した回答が見つかりませんでした。';
-    return 'Xin lỗi, mình không tìm được câu trả lời phù hợp cho câu hỏi của bạn.';
+    if (lang === 'en') return { answer: 'Sorry, I could not find a suitable answer for your question.', score: bestScore };
+    if (lang === 'ja') return { answer: '申し訳ありませんが、ご質問に適した回答が見つかりませんでした。', score: bestScore };
+    return { answer: 'Xin lỗi, mình không tìm được câu trả lời phù hợp cho câu hỏi của bạn.', score: bestScore };
 }
 
 // Node/test: export to globalThis

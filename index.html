@@ -12,9 +12,14 @@
         <header class="chat-header">
             <h1>Hikari</h1>
             <div class="header-controls">
+                <label class="thinking-toggle" title="Enable/Disable LLM Thinking">
+                    <input type="checkbox" id="thinking-toggle" onchange="if(typeof setLLMThinkingEnabled==='function')setLLMThinkingEnabled(this.checked)">
+                    <span class="thinking-toggle-label">🧠</span>
+                </label>
                 <button id="help-button" title="Hướng dẫn sử dụng">❓</button>
                 <button id="rules-button" title="Xem danh sách rules">📋</button>
                 <button id="macros-button" title="Xem danh sách Object Macros">🔧</button>
+                <button id="settings-button" title="Cài đặt">⚙️</button>
                 <select id="language-selector">
                     <option value="vi" selected>Tiếng Việt</option>
                     <option value="en">English</option>
@@ -40,10 +45,42 @@
                 <ul id="macros-list" class="macros-list"></ul>
             </div>
         </div>
+        <div id="settings-panel" class="slide-panel hidden">
+            <div class="slide-panel-header">
+                <h3>⚙️ Settings</h3>
+                <button class="slide-panel-close" onclick="toggleSettingsPanel()" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="slide-panel-body settings-body">
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="history-toggle">
+                        Chat History (gửi lịch sử cho LLM)
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        Max turns:
+                        <input type="number" id="history-max-turns" value="5" min="0" max="50" class="setting-number">
+                    </label>
+                    <span class="setting-hint">0 = không giới hạn</span>
+                </div>
+                <div class="setting-item setting-buttons">
+                    <button id="view-history-button" class="setting-btn">📜 View History</button>
+                    <button id="clear-history-button" class="setting-btn setting-btn-danger">🗑 Clear History</button>
+                </div>
+            </div>
+        </div>
         <div id="message-display" class="message-display"></div>
         <div class="input-area">
+            <button id="attach-button" title="Đính kèm ảnh" aria-label="Đính kèm ảnh">📎</button>
+            <input type="file" id="file-input" accept="image/*" class="hidden">
             <input type="text" id="message-input" placeholder="Nhập tin nhắn...">
             <button id="send-button">Gửi</button>
+        </div>
+        <div id="attachment-preview" class="attachment-preview hidden">
+            <img id="attachment-thumb" alt="Preview" class="attachment-thumb">
+            <span id="attachment-name" class="attachment-name"></span>
+            <button id="attachment-remove" class="attachment-remove" aria-label="Xóa">&times;</button>
         </div>
     </div>
     <!-- Help Dialog -->
@@ -59,9 +96,28 @@
         </div>
     </div>
 
+    <!-- History Dialog -->
+    <div id="history-overlay" class="help-overlay hidden" role="dialog" aria-modal="true">
+        <div class="help-dialog history-dialog">
+            <div class="help-dialog-header">
+                <h2 id="history-dialog-title">📜 Chat History</h2>
+                <div class="history-tab-buttons">
+                    <button id="history-tab-db" class="history-tab active">IndexedDB</button>
+                    <button id="history-tab-session" class="history-tab">Session</button>
+                </div>
+                <button id="history-close-button" class="help-close-button" aria-label="Đóng">&times;</button>
+            </div>
+            <div id="history-dialog-body" class="help-dialog-body">
+                <div id="history-list" class="history-list"></div>
+                <div id="history-paging" class="history-paging"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
     <script src="brain.js"></script>
     <script src="data-loader.js"></script>
+    <script src="data/chat-history-db.js"></script>
     <script src="adapters/text-similarity.js"></script>
     <script src="adapters/specific-response.js"></script>
     <script src="adapters/time-adapter.js"></script>
@@ -70,6 +126,7 @@
     <script src="adapters/best-match.js"></script>
     <script src="adapters/logic-dispatcher.js"></script>
     <script src="adapters/web-search.js"></script>
+    <script src="adapters/llm-adapter.js"></script>
     <script src="adapters/adapter-registry.js"></script>
     <script src="app.js"></script>
 </body>

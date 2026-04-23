@@ -73,6 +73,199 @@ body {
     cursor: pointer;
 }
 
+/* === Thinking Toggle === */
+.thinking-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 2px;
+}
+
+.thinking-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.thinking-toggle-label {
+    font-size: 1.2rem;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.thinking-toggle input[type="checkbox"]:checked + .thinking-toggle-label {
+    opacity: 1;
+}
+
+.thinking-toggle:hover .thinking-toggle-label {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* === Settings Panel === */
+.settings-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #333;
+    cursor: pointer;
+}
+
+.setting-number {
+    width: 60px;
+    padding: 3px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.setting-hint {
+    font-size: 0.75rem;
+    color: #999;
+    margin-left: 2px;
+}
+
+.setting-buttons {
+    flex-direction: row;
+    gap: 8px;
+}
+
+.setting-btn {
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.setting-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.setting-btn-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.setting-btn-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* === History Dialog === */
+.history-dialog {
+    max-width: 600px;
+    max-height: 85vh;
+}
+
+.history-tab-buttons {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    margin-right: 12px;
+}
+
+.history-tab {
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.history-tab.active {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.history-item-user {
+    background-color: #e3f2fd;
+}
+
+.history-item-assistant {
+    background-color: #f5f5f5;
+}
+
+.history-meta {
+    display: block;
+    font-size: 0.72rem;
+    color: #888;
+    margin-bottom: 3px;
+}
+
+.history-content {
+    display: block;
+    font-size: 0.85rem;
+    color: #333;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-empty {
+    text-align: center;
+    color: #999;
+    font-size: 0.88rem;
+    padding: 20px 0;
+}
+
+.history-paging {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 0 0;
+}
+
+.history-page-info {
+    font-size: 0.78rem;
+    color: #888;
+}
+
+.history-page-btn {
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.history-page-btn:hover {
+    background-color: #f0f0f0;
+}
+
 #language-selector option {
     color: #333333;
     background-color: #ffffff;
@@ -352,6 +545,166 @@ body {
 
 .input-area button:hover {
     background-color: #3a7bc8;
+}
+
+.input-area button:disabled,
+.input-area button.disabled {
+    background-color: #a0bfdf;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.input-area button:disabled:hover,
+.input-area button.disabled:hover {
+    background-color: #a0bfdf;
+}
+
+/* === LLM Loading Status === */
+.llm-loading-status {
+    align-self: flex-start;
+    padding: 10px 14px;
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    color: #856404;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* === Attachment Preview === */
+.attachment-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.attachment-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.attachment-name {
+    flex: 1;
+    font-size: 0.82rem;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachment-remove {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #999;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.attachment-remove:hover {
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* === Attach Button === */
+#attach-button {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+#attach-button:hover {
+    background-color: #e9ecef;
+}
+
+/* === Message Image === */
+.message-image {
+    display: block;
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    object-fit: contain;
+}
+
+/* === LLM Cancel Button === */
+.llm-cancel-container {
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
+.llm-cancel-button {
+    display: inline-block;
+    padding: 5px 14px;
+    font-size: 0.82rem;
+    color: #dc3545;
+    background-color: #fff;
+    border: 1px solid #dc3545;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.llm-cancel-button:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* === Streaming Message === */
+.message-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.message.bot.streaming .message-text {
+    border-right: 2px solid #4a90d9;
+    padding-right: 2px;
+    animation: blink-cursor 0.8s step-end infinite;
+}
+
+@keyframes blink-cursor {
+    50% { border-color: transparent; }
+}
+
+/* === LLM Thinking Block === */
+.llm-thinking-block {
+    background-color: #e8f5e9;
+    border-left: 3px solid #81c784;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    color: #2e7d32;
+}
+
+.llm-thinking-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.78rem;
+    margin-bottom: 4px;
+    color: #388e3c;
+}
+
+.llm-thinking-content {
+    display: block;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #1b5e20;
 }
 
 /* === Utility === */

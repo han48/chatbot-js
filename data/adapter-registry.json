@@ -68,5 +68,15 @@
         },
         "callSyntax": "<call>web_search <star></call>",
         "active": true
+    },
+    "llm_adapter": {
+        "name": { "vi": "LLM (WebGPU)", "en": "LLM (WebGPU)", "ja": "LLM（WebGPU）" },
+        "description": {
+            "vi": "Chạy mô hình ngôn ngữ lớn trực tiếp trên trình duyệt qua WebGPU (Qwen3.5)",
+            "en": "Run large language model directly in browser via WebGPU (Qwen3.5)",
+            "ja": "WebGPU経由でブラウザ上で大規模言語モデルを直接実行（Qwen3.5）"
+        },
+        "callSyntax": "<call>llm_adapter <star></call>",
+        "active": true
     }
 }

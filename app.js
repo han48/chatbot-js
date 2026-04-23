@@ -8,10 +8,18 @@ let bot = null;                // Instance RiveScript hiện tại
 let currentLang = 'vi';        // Ngôn ngữ hiện tại
 const USERNAME = 'local-user'; // Username cố định cho RiveScript
 var _adapterPath = [];         // Tracking adapter chain cho mỗi lượt phản hồi
+var _attachedImage = null;     // Ảnh đính kèm hiện tại: { dataURL: string, name: string } | null
+
+// === Chat History ===
+var _chatHistory = [];           // Mảng {role: 'user'|'assistant', content: string}
+var _chatHistoryEnabled = false; // Mặc định không lưu history
+var _chatHistoryMaxTurns = 5;    // Giới hạn số turn gửi cho LLM (0 = không giới hạn)
+var _skipHistoryOnce = false;    // Flag skip lưu history cho message tiếp theo
 
 // === Hằng số cấu hình ===
 const FALLBACK_API_URL = 'https://your-api-server.com/chat'; // URL có thể cấu hình
 const FALLBACK_API_TIMEOUT = 5000; // 5 giây
+const LLM_MODEL_ID_CONFIG = 'onnx-community/Qwen3.5-0.8B-ONNX-OPT'; // Model ID cho LLM Adapter (WebGPU)
 
 // ============================================================
 // Hàm tiện ích
@@ -158,6 +166,480 @@ function scrollToBottom() {
     }
 }
 
+// ============================================================
+// Send Button State Management
+// ============================================================
+
+/**
+ * Disable nút gửi và input.
+ * @param {string} [placeholder] - Placeholder text cho input khi disabled
+ */
+function setSendingDisabled(placeholder) {
+    var btn = document.getElementById('send-button');
+    var input = document.getElementById('message-input');
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+    }
+    if (input && placeholder) {
+        input.dataset.prevPlaceholder = input.placeholder;
+        input.placeholder = placeholder;
+    }
+}
+
+/**
+ * Enable nút gửi và input.
+ */
+function setSendingEnabled() {
+    var btn = document.getElementById('send-button');
+    var input = document.getElementById('message-input');
+    if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+    }
+    if (input && input.dataset.prevPlaceholder) {
+        input.placeholder = input.dataset.prevPlaceholder;
+        delete input.dataset.prevPlaceholder;
+    }
+}
+
+// ============================================================
+// LLM Loading Status — Hiển thị trạng thái loading model trên UI
+// ============================================================
+
+/** Phần tử hiển thị trạng thái loading LLM hiện tại (nếu có). */
+var _llmLoadingStatusEl = null;
+
+/**
+ * Hiển thị hoặc cập nhật trạng thái loading LLM trên message display.
+ * @param {string} message - Nội dung trạng thái
+ */
+function showLLMLoadingStatus(message) {
+    var display = document.getElementById('message-display');
+    if (!display) return;
+
+    if (!_llmLoadingStatusEl) {
+        _llmLoadingStatusEl = document.createElement('div');
+        _llmLoadingStatusEl.className = 'message bot llm-loading-status';
+        display.appendChild(_llmLoadingStatusEl);
+    }
+    _llmLoadingStatusEl.textContent = '🤖 ' + message;
+    scrollToBottom();
+}
+
+/**
+ * Xóa trạng thái loading LLM khỏi message display.
+ */
+function hideLLMLoadingStatus() {
+    if (_llmLoadingStatusEl && _llmLoadingStatusEl.parentNode) {
+        _llmLoadingStatusEl.parentNode.removeChild(_llmLoadingStatusEl);
+    }
+    _llmLoadingStatusEl = null;
+}
+
+/**
+ * Callback xử lý thông báo trạng thái từ LLM Adapter.
+ * Được đăng ký qua setLLMStatusCallback().
+ * @param {string} action - 'loading_start' | 'loading_progress' | 'loading_done' | 'loading_error'
+ * @param {string} message - Mô tả trạng thái
+ */
+function onLLMStatusChange(action, message) {
+    if (action === 'loading_start' || action === 'loading_progress') {
+        showLLMLoadingStatus(message);
+        setSendingDisabled('Đang tải mô hình AI...');
+    } else if (action === 'loading_done') {
+        hideLLMLoadingStatus();
+        showLLMLoadingStatus('✅ ' + message);
+        // Tự động ẩn sau 2 giây
+        setTimeout(function () {
+            hideLLMLoadingStatus();
+        }, 2000);
+        setSendingEnabled();
+    } else if (action === 'loading_error') {
+        hideLLMLoadingStatus();
+        showLLMLoadingStatus('❌ ' + message);
+        setSendingEnabled();
+    }
+}
+
+// ============================================================
+// LLM Cancel Button — Nút hủy generate LLM
+// ============================================================
+
+/** Phần tử nút cancel hiện tại (nếu có). */
+var _llmCancelEl = null;
+
+/**
+ * Hiển thị nút Cancel dưới message display khi LLM đang generate.
+ * @returns {HTMLElement|null} Phần tử cancel button
+ */
+function showLLMCancelButton() {
+    var display = document.getElementById('message-display');
+    if (!display) return null;
+
+    hideLLMCancelButton();
+
+    _llmCancelEl = document.createElement('div');
+    _llmCancelEl.className = 'llm-cancel-container';
+
+    var btn = document.createElement('button');
+    btn.className = 'llm-cancel-button';
+    btn.textContent = '⏹ Cancel';
+    btn.addEventListener('click', function () {
+        if (typeof cancelLLMGeneration === 'function') {
+            cancelLLMGeneration();
+        }
+        hideLLMCancelButton();
+    });
+
+    _llmCancelEl.appendChild(btn);
+    display.appendChild(_llmCancelEl);
+    scrollToBottom();
+    return _llmCancelEl;
+}
+
+/**
+ * Ẩn/xóa nút Cancel.
+ */
+function hideLLMCancelButton() {
+    if (_llmCancelEl && _llmCancelEl.parentNode) {
+        _llmCancelEl.parentNode.removeChild(_llmCancelEl);
+    }
+    _llmCancelEl = null;
+}
+
+// ============================================================
+// LLM Streaming Message — Tạo message bot và cập nhật realtime
+// ============================================================
+
+/**
+ * Tạo một message bot trống trong message display để stream text vào.
+ * Bao gồm thinking block (ẩn mặc định) và response block.
+ * @returns {{thinkEl: HTMLElement, textEl: HTMLElement, messageDiv: HTMLElement}}
+ */
+function createStreamingBotMessage() {
+    var display = document.getElementById('message-display');
+    if (!display) return null;
+
+    var messageDiv = document.createElement('div');
+    messageDiv.className = 'message bot streaming';
+
+    var thinkDiv = null;
+    var thinkContent = null;
+    var thinkingOn = (typeof isLLMThinkingEnabled === 'function') && isLLMThinkingEnabled();
+
+    // Thinking block — chỉ tạo khi thinking được bật
+    if (thinkingOn) {
+        thinkDiv = document.createElement('div');
+        thinkDiv.className = 'llm-thinking-block hidden';
+        var thinkLabel = document.createElement('span');
+        thinkLabel.className = 'llm-thinking-label';
+        thinkLabel.textContent = '🧠 Thinking...';
+        thinkDiv.appendChild(thinkLabel);
+        thinkContent = document.createElement('span');
+        thinkContent.className = 'llm-thinking-content';
+        thinkDiv.appendChild(thinkContent);
+        messageDiv.appendChild(thinkDiv);
+    }
+
+    // Response block
+    var textSpan = document.createElement('span');
+    textSpan.className = 'message-text';
+    textSpan.textContent = '...';
+    messageDiv.appendChild(textSpan);
+
+    display.appendChild(messageDiv);
+    scrollToBottom();
+    return { thinkEl: thinkContent, textEl: textSpan, messageDiv: messageDiv, thinkDiv: thinkDiv };
+}
+
+/**
+ * Parse accumulated text thành thinking part và response part.
+ * @param {string} text
+ * @returns {{thinking: string, response: string, thinkingDone: boolean}}
+ */
+function _parseThinkingText(text) {
+    if (!text) return { thinking: '', response: '', thinkingDone: false };
+    var endIdx = text.indexOf('</think>');
+    if (endIdx !== -1) {
+        return {
+            thinking: text.substring(0, endIdx).trim(),
+            response: text.substring(endIdx + '</think>'.length).replace(/^\n+/, '').trim(),
+            thinkingDone: true
+        };
+    }
+    // Chưa có </think> → toàn bộ là thinking
+    return { thinking: text.trim(), response: '', thinkingDone: false };
+}
+
+/**
+ * Xóa tag <think>...</think> khỏi text (dùng khi thinking bị disable).
+ * @param {string} text
+ * @returns {string}
+ */
+function _stripThinkTags(text) {
+    if (!text) return '';
+    return text.replace(/<think>[\s\S]*?<\/think>/g, '').replace(/^\n+/, '').trim();
+}
+
+/**
+ * Tạo callback onToken để cập nhật streaming message element realtime.
+ * Tách thinking và response, hiển thị thinking trong block riêng.
+ * @param {object} els - { thinkEl, textEl, thinkDiv }
+ * @returns {function} Callback fn(accumulatedText)
+ */
+function createStreamingCallback(els) {
+    return function (accumulatedText) {
+        if (!els) return;
+
+        // Không có thinking block → strip think tags và stream thẳng vào textEl
+        if (!els.thinkDiv) {
+            if (els.textEl) {
+                els.textEl.textContent = _stripThinkTags(accumulatedText) || '...';
+            }
+            scrollToBottom();
+            return;
+        }
+
+        // Có thinking block → parse và tách
+        var parsed = _parseThinkingText(accumulatedText);
+
+        if (parsed.thinking && els.thinkEl) {
+            els.thinkDiv.classList.remove('hidden');
+            els.thinkEl.textContent = parsed.thinking;
+        }
+
+        if (els.textEl) {
+            if (parsed.thinkingDone) {
+                els.textEl.textContent = parsed.response || '...';
+            } else {
+                els.textEl.textContent = '...';
+            }
+        }
+        scrollToBottom();
+    };
+}
+
+/**
+ * Hoàn tất streaming message — render final text với thinking block, thêm metadata.
+ * @param {object} els - { thinkEl, textEl, messageDiv, thinkDiv }
+ * @param {string} finalText - Text cuối cùng (có thể chứa <think>...</think>)
+ * @param {number} [confidence] - Confidence score
+ * @param {string[]} [adapterPath] - Adapter path
+ * @param {number} [responseTime] - Response time (ms)
+ */
+function finalizeStreamingMessage(els, finalText, confidence, adapterPath, responseTime) {
+    if (!els || !els.messageDiv) return;
+    var messageDiv = els.messageDiv;
+
+    // Lưu bot response vào history
+    if (finalText) {
+        addChatHistory('assistant', finalText);
+    }
+
+    if (els.thinkDiv) {
+        // Thinking mode — parse và tách
+        var parsed = _parseThinkingText(finalText);
+
+        if (parsed.thinking && els.thinkEl) {
+            els.thinkDiv.classList.remove('hidden');
+            els.thinkEl.textContent = parsed.thinking;
+            var label = els.thinkDiv.querySelector('.llm-thinking-label');
+            if (label) label.textContent = '🧠 Thought';
+        } else {
+            els.thinkDiv.classList.add('hidden');
+        }
+
+        if (els.textEl) {
+            els.textEl.textContent = parsed.thinkingDone ? parsed.response : finalText.replace(/^\n+/, '').trim();
+        }
+    } else {
+        // Non-thinking mode — strip think tags
+        if (els.textEl) {
+            els.textEl.textContent = _stripThinkTags(finalText);
+        }
+    }
+
+    messageDiv.classList.remove('streaming');
+
+    if (typeof confidence === 'number') {
+        var confSpan = document.createElement('span');
+        confSpan.className = 'confidence ' + getConfidenceClass(confidence);
+        confSpan.textContent = 'Confidence: ' + confidence + '%';
+        messageDiv.appendChild(confSpan);
+    }
+
+    if (adapterPath && adapterPath.length > 0) {
+        var pathSpan = document.createElement('span');
+        pathSpan.className = 'adapter-path';
+        var breadcrumb = adapterPath.map(function (key) {
+            return getAdapterDisplayName(key);
+        }).join(' › ');
+        pathSpan.textContent = breadcrumb;
+        messageDiv.appendChild(pathSpan);
+    }
+
+    if (typeof responseTime === 'number') {
+        var timeSpan = document.createElement('span');
+        timeSpan.className = 'response-time';
+        timeSpan.textContent = '⏱ ' + responseTime + 'ms';
+        messageDiv.appendChild(timeSpan);
+    }
+
+    scrollToBottom();
+}
+
+/**
+ * Xóa streaming message element (khi cần thay bằng fallback message).
+ * @param {object} els - { messageDiv } hoặc HTMLElement (backward compat)
+ */
+function removeStreamingMessage(els) {
+    var div = els && els.messageDiv ? els.messageDiv : (els && els.parentNode ? els.parentNode : null);
+    if (div && div.parentNode) {
+        div.parentNode.removeChild(div);
+    }
+}
+
+// ============================================================
+// File Attachment — Quản lý đính kèm ảnh
+// ============================================================
+
+/**
+ * Xử lý khi người dùng chọn file ảnh.
+ * Đọc file, tạo preview, lưu dataURL.
+ * @param {File} file - File ảnh từ input
+ */
+function handleFileAttachment(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        _attachedImage = { dataURL: e.target.result, name: file.name };
+
+        var thumb = document.getElementById('attachment-thumb');
+        var nameEl = document.getElementById('attachment-name');
+        var preview = document.getElementById('attachment-preview');
+
+        if (thumb) thumb.src = e.target.result;
+        if (nameEl) nameEl.textContent = file.name;
+        if (preview) preview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Xóa ảnh đính kèm hiện tại.
+ */
+function clearAttachment() {
+    _attachedImage = null;
+
+    var thumb = document.getElementById('attachment-thumb');
+    var nameEl = document.getElementById('attachment-name');
+    var preview = document.getElementById('attachment-preview');
+    var fileInput = document.getElementById('file-input');
+
+    if (thumb) thumb.src = '';
+    if (nameEl) nameEl.textContent = '';
+    if (preview) preview.classList.add('hidden');
+    if (fileInput) fileInput.value = '';
+}
+
+/**
+ * Lấy ảnh đính kèm hiện tại (nếu có) và xóa sau khi lấy.
+ * @returns {{ dataURL: string, name: string }|null}
+ */
+function consumeAttachment() {
+    var img = _attachedImage;
+    if (img) {
+        clearAttachment();
+    }
+    return img;
+}
+
+// ============================================================
+// Chat History — Lưu lịch sử hội thoại cho tất cả adapter
+// ============================================================
+
+/**
+ * Lưu một message vào chat history.
+ * @param {string} role - 'user' hoặc 'assistant'
+ * @param {string} content - Nội dung message
+ */
+function addChatHistory(role, content) {
+    if (!content || !content.trim()) return;
+    // Strip thinking tags khi lưu assistant response
+    var clean = content;
+    if (role === 'assistant') {
+        var thinkEnd = clean.indexOf('</think>');
+        if (thinkEnd !== -1) {
+            clean = clean.substring(thinkEnd + '</think>'.length);
+        }
+        clean = clean.replace(/<think>[\s\S]*?<\/think>/g, '').replace(/^\n+/, '').trim();
+    }
+    if (!clean.trim()) return;
+    _chatHistory.push({ role: role, content: clean.trim() });
+
+    // Lưu vào IndexedDB (async, không block)
+    if (typeof saveChatMessage === 'function') {
+        saveChatMessage(role, clean.trim(), currentLang).catch(function (err) {
+            console.error('Lỗi lưu history vào IndexedDB:', err);
+        });
+    }
+}
+
+/**
+ * Lấy history đã trim theo maxTurns để gửi cho LLM.
+ * Chỉ trả history khi _chatHistoryEnabled = true.
+ * @returns {Array<{role: string, content: string}>}
+ */
+function getChatHistoryForLLM() {
+    if (!_chatHistoryEnabled || _chatHistory.length === 0) return [];
+    if (_chatHistoryMaxTurns > 0 && _chatHistory.length > _chatHistoryMaxTurns * 2) {
+        return _chatHistory.slice(-_chatHistoryMaxTurns * 2);
+    }
+    return _chatHistory.slice();
+}
+
+/**
+ * Xóa toàn bộ chat history.
+ */
+function clearChatHistory() {
+    _chatHistory = [];
+}
+
+/**
+ * Bật/tắt lưu history.
+ * @param {boolean} enabled
+ */
+function setChatHistoryEnabled(enabled) {
+    _chatHistoryEnabled = !!enabled;
+    if (!_chatHistoryEnabled) {
+        _chatHistory = [];
+    }
+}
+
+/**
+ * @returns {boolean}
+ */
+function isChatHistoryEnabled() {
+    return _chatHistoryEnabled;
+}
+
+/**
+ * Đặt giới hạn số turn gửi cho LLM. 0 = không giới hạn.
+ * @param {number} maxTurns
+ */
+function setChatHistoryMaxTurns(maxTurns) {
+    _chatHistoryMaxTurns = Math.max(0, parseInt(maxTurns, 10) || 0);
+}
+
+/**
+ * @returns {number}
+ */
+function getChatHistoryMaxTurns() {
+    return _chatHistoryMaxTurns;
+}
+
 /**
  * Thêm tin nhắn vào DOM với class phân biệt user/bot, kèm confidence, adapter path và thời gian xử lý nếu là bot.
  * @param {string} text - Nội dung tin nhắn
@@ -165,13 +647,29 @@ function scrollToBottom() {
  * @param {number} [confidence] - Tỉ lệ khớp (chỉ dùng cho bot)
  * @param {string[]} [adapterPath] - Danh sách adapter đã xử lý (chỉ dùng cho bot)
  * @param {number} [responseTime] - Thời gian xử lý (ms, chỉ dùng cho bot)
+ * @param {string} [imageDataURL] - Data URL ảnh đính kèm (chỉ dùng cho user)
  */
-function appendMessage(text, sender, confidence, adapterPath, responseTime) {
+function appendMessage(text, sender, confidence, adapterPath, responseTime, imageDataURL) {
     const display = document.getElementById('message-display');
     if (!display) return;
 
+    // Lưu bot response vào history (trừ khi đang skip)
+    if (sender === 'bot' && text && !_skipHistoryOnce) {
+        addChatHistory('assistant', text);
+    }
+    _skipHistoryOnce = false;
+
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message ' + sender;
+
+    // Hiển thị ảnh đính kèm (nếu có)
+    if (imageDataURL) {
+        var imgEl = document.createElement('img');
+        imgEl.className = 'message-image';
+        imgEl.src = imageDataURL;
+        imgEl.alt = 'Attached image';
+        messageDiv.appendChild(imgEl);
+    }
 
     const textSpan = document.createElement('span');
     textSpan.className = 'message-text';
@@ -333,6 +831,16 @@ async function initBot(lang) {
         if (typeof registerAdapters === 'function') {
             registerAdapters(bot, lang);
         }
+
+        // Cấu hình LLM Model ID từ app.js
+        if (typeof setLLMModelId === 'function') {
+            setLLMModelId(LLM_MODEL_ID_CONFIG);
+        }
+
+        // Đăng ký callback nhận trạng thái loading LLM
+        if (typeof setLLMStatusCallback === 'function') {
+            setLLMStatusCallback(onLLMStatusChange);
+        }
     } catch (err) {
         console.error('Lỗi khởi tạo RiveScript:', err);
         showError('Không thể khởi tạo chatbot. Vui lòng tải lại trang.');
@@ -351,6 +859,7 @@ async function changeLanguage(lang) {
     await initBot(lang);
 
     // Xóa lịch sử hội thoại
+    clearChatHistory();
     var display = document.getElementById('message-display');
     if (display) {
         display.innerHTML = '';
@@ -360,6 +869,7 @@ async function changeLanguage(lang) {
     if (bot) {
         try {
             var greeting = await bot.reply(USERNAME, GREETING_TRIGGERS[lang] || 'hello');
+            _skipHistoryOnce = true;
             appendMessage(greeting, 'bot');
         } catch (err) {
             console.error('Lỗi lấy lời chào:', err);
@@ -468,6 +978,27 @@ function extractWebSearchQuery(text) {
 }
 
 /**
+ * Tạo message fallback cuối cùng khi tất cả adapter đều thất bại.
+ * Kèm thông tin lỗi LLM (nếu có) để hỗ trợ debug.
+ * @returns {string}
+ */
+function getFinalFallbackMessage() {
+    var lang = currentLang || 'vi';
+    var base;
+    if (lang === 'en') base = 'Sorry, I couldn\'t find an answer for your question. Please try rephrasing or ask something else.';
+    else if (lang === 'ja') base = '申し訳ありませんが、ご質問に対する回答が見つかりませんでした。別の言い方で試してみてください。';
+    else base = 'Xin lỗi, mình không tìm được câu trả lời cho câu hỏi của bạn. Bạn thử hỏi cách khác nhé!';
+
+    // Kèm thông tin lỗi LLM nếu có
+    var llmError = (typeof getLLMLastError === 'function') ? getLLMLastError() : null;
+    if (llmError) {
+        base += '\n⚠️ LLM: ' + llmError;
+    }
+
+    return base;
+}
+
+/**
  * Lấy phản hồi từ bot cho một input, trả về reply + confidence + adapterPath.
  * @param {string} inputText - Input gửi cho bot
  * @returns {Promise<{reply: string, confidence: number, adapterPath: string[]}>}
@@ -496,14 +1027,19 @@ async function sendMessage() {
     if (!input) return;
 
     var text = input.value;
+    var attachment = consumeAttachment();
 
-    // Kiểm tra tin nhắn hợp lệ
-    if (!validateMessage(text)) {
+    // Kiểm tra tin nhắn hợp lệ (cho phép gửi ảnh mà không cần text)
+    if (!validateMessage(text) && !attachment) {
         return;
     }
 
-    // Hiển thị tin nhắn người dùng
-    appendMessage(text, 'user');
+    // Hiển thị tin nhắn người dùng (kèm ảnh nếu có)
+    appendMessage(text || '', 'user', undefined, undefined, undefined, attachment ? attachment.dataURL : undefined);
+
+    // Lưu user message vào history (nếu có ảnh mà không có text, ghi chú [image])
+    var historyText = (text && text.trim()) ? text : (attachment ? '[image: ' + attachment.name + ']' : '');
+    addChatHistory('user', historyText);
 
     // Xóa input
     input.value = '';
@@ -514,26 +1050,67 @@ async function sendMessage() {
         return;
     }
 
+    // Disable nút gửi trong khi đang xử lý
+    setSendingDisabled();
+
+    var loadingEl = null;
+
     try {
         var startTime = Date.now();
+
+        // Nếu có ảnh đính kèm → gửi thẳng qua LLM Adapter (RiveScript không xử lý ảnh)
+        if (attachment) {
+            var streamEl = createStreamingBotMessage();
+            var streamCb = createStreamingCallback(streamEl);
+            showLLMCancelButton();
+            try {
+                _adapterPath = [];
+                var imgResult = null;
+                if (typeof llmAdapter === 'function') {
+                    imgResult = await llmAdapter(null, (text || '').split(/\s+/), attachment.dataURL, streamCb, getChatHistoryForLLM());
+                }
+                hideLLMCancelButton();
+                var elapsedImg = Date.now() - startTime;
+                var imgPath = _adapterPath.length > 0 ? _adapterPath.slice() : ['llm_adapter'];
+
+                if (isValidAdapterResult(imgResult)) {
+                    finalizeStreamingMessage(streamEl, imgResult, null, imgPath, elapsedImg);
+                } else {
+                    removeStreamingMessage(streamEl);
+                    appendMessage(getFinalFallbackMessage(), 'bot', null, imgPath, elapsedImg);
+                }
+            } catch (imgErr) {
+                hideLLMCancelButton();
+                removeStreamingMessage(streamEl);
+                console.error('Lỗi xử lý ảnh:', imgErr);
+                var imgErrMsg = 'Không thể xử lý ảnh.';
+                var llmErr = (typeof getLLMLastError === 'function') ? getLLMLastError() : null;
+                if (llmErr) imgErrMsg += '\n⚠️ LLM: ' + llmErr;
+                else if (imgErr && imgErr.message) imgErrMsg += '\n⚠️ ' + imgErr.message;
+                showError(imgErrMsg);
+            }
+            return;
+        }
 
         // Web Search: detect "google ...", "tra cuu ...", "search ...", "web search ..." trước khi gửi cho RiveScript
         // Xử lý trực tiếp vì web search là async và RiveScript subroutine không hỗ trợ Promise
         var webSearchQuery = extractWebSearchQuery(text);
         if (webSearchQuery && typeof webSearchAdapter === 'function') {
-            var loadingEl = showLoadingIndicator();
+            loadingEl = showLoadingIndicator();
             try {
                 _adapterPath = [];
                 var searchResult = await webSearchAdapter(null, webSearchQuery.split(/\s+/));
                 hideLoadingIndicator(loadingEl);
+                loadingEl = null;
                 var elapsed = Date.now() - startTime;
                 var searchPath = _adapterPath.length > 0 ? _adapterPath.slice() : ['web_search'];
                 appendMessage(searchResult, 'bot', null, searchPath, elapsed);
             } catch (searchErr) {
                 hideLoadingIndicator(loadingEl);
+                loadingEl = null;
+                console.error('Lỗi tìm kiếm web:', searchErr);
                 showError('Tìm kiếm thất bại. Vui lòng thử lại.');
             }
-            scrollToBottom();
             return;
         }
 
@@ -557,50 +1134,120 @@ async function sendMessage() {
             var elapsed = Date.now() - startTime;
             appendMessage(reply, 'bot', confidence, adapterPath, elapsed);
         } else {
-            _adapterPath = [];
-            var localFallback = bestMatchAdapter(bot, text.toLowerCase().split(/\s+/));
-            var localPath = _adapterPath.slice();
-
-            if (currentLang === 'vi') {
+            // Thử best match adapter
+            var localFallback = null;
+            var localPath = [];
+            var localConfidence = confidence;
+            try {
                 _adapterPath = [];
-                var normFallback = bestMatchAdapter(bot, normalizeInput(text).toLowerCase().split(/\s+/));
-                var normPath = _adapterPath.slice();
-                if (isValidAdapterResult(normFallback) && !isValidAdapterResult(localFallback)) {
-                    localFallback = normFallback;
-                    localPath = normPath;
+                var bmResult = bestMatchAdapter(bot, text.toLowerCase().split(/\s+/));
+                localPath = _adapterPath.slice();
+
+                if (currentLang === 'vi') {
+                    _adapterPath = [];
+                    var normBmResult = bestMatchAdapter(bot, normalizeInput(text).toLowerCase().split(/\s+/));
+                    var normPath = _adapterPath.slice();
+                    if (normBmResult && isValidAdapterResult(normBmResult.answer)
+                        && (!bmResult || !isValidAdapterResult(bmResult.answer) || normBmResult.score > bmResult.score)) {
+                        bmResult = normBmResult;
+                        localPath = normPath;
+                    }
                 }
+
+                if (bmResult && isValidAdapterResult(bmResult.answer)) {
+                    localFallback = bmResult.answer;
+                    localConfidence = Math.round(bmResult.score * 100);
+                }
+            } catch (matchErr) {
+                console.error('Lỗi best match adapter:', matchErr);
+                localFallback = null;
             }
 
-            if (isValidAdapterResult(localFallback)) {
+            if (localFallback) {
                 var elapsed2 = Date.now() - startTime;
-                appendMessage(localFallback, 'bot', confidence, localPath, elapsed2);
+                appendMessage(localFallback, 'bot', localConfidence, localPath, elapsed2);
             } else {
-                var loadingEl = showLoadingIndicator();
+                // Thử Fallback API → LLM Adapter
+                loadingEl = showLoadingIndicator();
 
                 try {
                     var apiResult = await callFallbackAPI(text);
-                    hideLoadingIndicator(loadingEl);
-                    var elapsed3 = Date.now() - startTime;
 
                     if (apiResult) {
+                        hideLoadingIndicator(loadingEl);
+                        loadingEl = null;
+                        var elapsed3 = Date.now() - startTime;
                         var apiPath = adapterPath.concat(['fallback_api']);
                         appendMessage(apiResult, 'bot', confidence, apiPath, elapsed3);
                     } else {
-                        appendMessage(reply + '\n(Dịch vụ bổ sung không khả dụng)', 'bot', confidence, adapterPath, elapsed3);
+                        // Fallback API trả null → thử LLM Adapter (WebGPU)
+                        hideLoadingIndicator(loadingEl);
+                        loadingEl = null;
+                        var streamEl2 = createStreamingBotMessage();
+                        var streamCb2 = createStreamingCallback(streamEl2);
+                        showLLMCancelButton();
+                        var llmResult = null;
+                        if (typeof llmAdapter === 'function') {
+                            try {
+                                llmResult = await llmAdapter(null, text.split(/\s+/), null, streamCb2, getChatHistoryForLLM());
+                            } catch (llmErr) {
+                                console.error('Lỗi LLM adapter:', llmErr);
+                                llmResult = null;
+                            }
+                        }
+                        hideLLMCancelButton();
+                        var elapsed3b = Date.now() - startTime;
+
+                        if (isValidAdapterResult(llmResult)) {
+                            var llmPath = adapterPath.concat(['llm_adapter']);
+                            finalizeStreamingMessage(streamEl2, llmResult, confidence, llmPath, elapsed3b);
+                        } else {
+                            removeStreamingMessage(streamEl2);
+                            appendMessage(getFinalFallbackMessage(), 'bot', confidence, adapterPath, elapsed3b);
+                        }
                     }
                 } catch (apiErr) {
+                    // callFallbackAPI ném exception → thử LLM Adapter (WebGPU)
+                    console.error('Lỗi fallback API:', apiErr);
                     hideLoadingIndicator(loadingEl);
+                    loadingEl = null;
+                    var streamEl3 = createStreamingBotMessage();
+                    var streamCb3 = createStreamingCallback(streamEl3);
+                    showLLMCancelButton();
+                    var llmResult2 = null;
+                    if (typeof llmAdapter === 'function') {
+                        try {
+                            llmResult2 = await llmAdapter(null, text.split(/\s+/), null, streamCb3, getChatHistoryForLLM());
+                        } catch (llmErr2) {
+                            console.error('Lỗi LLM adapter:', llmErr2);
+                            llmResult2 = null;
+                        }
+                    }
+                    hideLLMCancelButton();
                     var elapsed4 = Date.now() - startTime;
-                    appendMessage(reply + '\n(Dịch vụ bổ sung không khả dụng)', 'bot', confidence, adapterPath, elapsed4);
+
+                    if (isValidAdapterResult(llmResult2)) {
+                        var llmPath2 = adapterPath.concat(['llm_adapter']);
+                        finalizeStreamingMessage(streamEl3, llmResult2, confidence, llmPath2, elapsed4);
+                    } else {
+                        removeStreamingMessage(streamEl3);
+                        appendMessage(getFinalFallbackMessage(), 'bot', confidence, adapterPath, elapsed4);
+                    }
                 }
             }
         }
     } catch (err) {
         console.error('Lỗi xử lý tin nhắn:', err);
         showError('Xin lỗi, mình gặp sự cố. Bạn thử gửi lại nhé!');
+    } finally {
+        // Luôn dọn dẹp loading indicator, cancel button và enable lại nút gửi
+        hideLLMCancelButton();
+        if (loadingEl) {
+            hideLoadingIndicator(loadingEl);
+        }
+        setSendingEnabled();
+        scrollToBottom();
     }
-
-    scrollToBottom();
 }
 
 // ============================================================
@@ -645,6 +1292,7 @@ async function sendMessage() {
         'best-match.js',
         'logic-dispatcher.js',
         'web-search.js',
+        'llm-adapter.js',
         'adapter-registry.js'
     ];
     for (var i = 0; i < files.length; i++) {
@@ -668,6 +1316,177 @@ function toggleMacrosPanel() {
     var panel = document.getElementById('macros-panel');
     if (panel) {
         panel.classList.toggle('hidden');
+    }
+}
+
+/**
+ * Toggle hiển thị panel Settings.
+ */
+function toggleSettingsPanel() {
+    var panel = document.getElementById('settings-panel');
+    if (panel) {
+        panel.classList.toggle('hidden');
+    }
+}
+
+// ============================================================
+// History Dialog — Xem lịch sử chat (IndexedDB + Session)
+// ============================================================
+
+var _historyCurrentTab = 'db'; // 'db' hoặc 'session'
+var _historyCurrentPage = 1;
+var _historyPageSize = 20;
+
+function openHistoryDialog() {
+    var overlay = document.getElementById('history-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+    _historyCurrentTab = 'db';
+    _historyCurrentPage = 1;
+    _updateHistoryTabUI();
+    _loadHistoryPage();
+}
+
+function closeHistoryDialog() {
+    var overlay = document.getElementById('history-overlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+function _updateHistoryTabUI() {
+    var tabDb = document.getElementById('history-tab-db');
+    var tabSession = document.getElementById('history-tab-session');
+    if (tabDb) tabDb.classList.toggle('active', _historyCurrentTab === 'db');
+    if (tabSession) tabSession.classList.toggle('active', _historyCurrentTab === 'session');
+}
+
+function _formatTimestamp(ts) {
+    if (!ts) return '';
+    var d = new Date(ts);
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+        + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+async function _loadHistoryPage() {
+    var listEl = document.getElementById('history-list');
+    var pagingEl = document.getElementById('history-paging');
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+
+    if (_historyCurrentTab === 'db') {
+        // IndexedDB history
+        if (typeof getMessagesPage !== 'function') {
+            listEl.innerHTML = '<p class="history-empty">IndexedDB không khả dụng.</p>';
+            if (pagingEl) pagingEl.innerHTML = '';
+            return;
+        }
+        try {
+            var result = await getMessagesPage(_historyCurrentPage, _historyPageSize);
+            if (result.messages.length === 0) {
+                listEl.innerHTML = '<p class="history-empty">Chưa có lịch sử.</p>';
+            } else {
+                for (var i = 0; i < result.messages.length; i++) {
+                    var msg = result.messages[i];
+                    var div = document.createElement('div');
+                    div.className = 'history-item history-item-' + msg.role;
+                    var meta = document.createElement('span');
+                    meta.className = 'history-meta';
+                    meta.textContent = (msg.role === 'user' ? '👤' : '🤖') + ' ' + _formatTimestamp(msg.timestamp);
+                    div.appendChild(meta);
+                    var content = document.createElement('span');
+                    content.className = 'history-content';
+                    content.textContent = msg.content;
+                    div.appendChild(content);
+                    listEl.appendChild(div);
+                }
+            }
+            // Paging
+            if (pagingEl) {
+                pagingEl.innerHTML = '';
+                if (result.totalPages > 1) {
+                    var info = document.createElement('span');
+                    info.className = 'history-page-info';
+                    info.textContent = 'Trang ' + result.page + '/' + result.totalPages + ' (' + result.total + ' messages)';
+                    pagingEl.appendChild(info);
+
+                    if (result.page > 1) {
+                        var prevBtn = document.createElement('button');
+                        prevBtn.className = 'history-page-btn';
+                        prevBtn.textContent = '← Trước';
+                        prevBtn.addEventListener('click', function () {
+                            _historyCurrentPage--;
+                            _loadHistoryPage();
+                        });
+                        pagingEl.appendChild(prevBtn);
+                    }
+                    if (result.page < result.totalPages) {
+                        var nextBtn = document.createElement('button');
+                        nextBtn.className = 'history-page-btn';
+                        nextBtn.textContent = 'Sau →';
+                        nextBtn.addEventListener('click', function () {
+                            _historyCurrentPage++;
+                            _loadHistoryPage();
+                        });
+                        pagingEl.appendChild(nextBtn);
+                    }
+                }
+            }
+        } catch (err) {
+            listEl.innerHTML = '<p class="history-empty">Lỗi: ' + err.message + '</p>';
+            if (pagingEl) pagingEl.innerHTML = '';
+        }
+    } else {
+        // Session history (_chatHistory)
+        if (pagingEl) pagingEl.innerHTML = '';
+        if (_chatHistory.length === 0) {
+            listEl.innerHTML = '<p class="history-empty">Session hiện tại chưa có lịch sử.</p>';
+            return;
+        }
+        // Hiển thị mới nhất trước
+        for (var j = _chatHistory.length - 1; j >= 0; j--) {
+            var m = _chatHistory[j];
+            var d = document.createElement('div');
+            d.className = 'history-item history-item-' + m.role;
+            var icon = document.createElement('span');
+            icon.className = 'history-meta';
+            icon.textContent = (m.role === 'user' ? '👤 User' : '🤖 Bot');
+            d.appendChild(icon);
+            var c = document.createElement('span');
+            c.className = 'history-content';
+            c.textContent = m.content;
+            d.appendChild(c);
+            listEl.appendChild(d);
+        }
+    }
+}
+
+async function clearAllHistory() {
+    if (typeof clearAllChatMessages === 'function') {
+        await clearAllChatMessages();
+    }
+    clearChatHistory();
+    // Nếu dialog đang mở, refresh
+    var overlay = document.getElementById('history-overlay');
+    if (overlay && !overlay.classList.contains('hidden')) {
+        _loadHistoryPage();
+    }
+}
+
+/**
+ * Load 10 messages gần nhất từ IndexedDB và hiển thị trong chat.
+ */
+async function loadRecentHistoryToChat() {
+    if (typeof getRecentMessages !== 'function') return;
+    try {
+        var messages = await getRecentMessages(10);
+        if (messages.length === 0) return;
+        for (var i = 0; i < messages.length; i++) {
+            var msg = messages[i];
+            var sender = msg.role === 'user' ? 'user' : 'bot';
+            appendMessage(msg.content, sender);
+        }
+    } catch (err) {
+        console.error('Lỗi load history:', err);
     }
 }
 
@@ -939,10 +1758,14 @@ async function initializeApp() {
     // Hiển thị lời chào khởi tạo
     if (bot) {
         var greeting = await bot.reply(USERNAME, GREETING_TRIGGERS['vi']);
+        _skipHistoryOnce = true;
         appendMessage(greeting, 'bot');
         updateRulesList('vi');
         updateMacrosList('vi');
     }
+
+    // Load 10 messages gần nhất từ IndexedDB
+    await loadRecentHistoryToChat();
 
     // === Gắn Event Listeners ===
 
@@ -986,6 +1809,111 @@ async function initializeApp() {
     var helpBtn = document.getElementById('help-button');
     if (helpBtn) {
         helpBtn.addEventListener('click', openHelpDialog);
+    }
+
+    // Thinking toggle: change → bật/tắt thinking mode
+    var thinkingToggle = document.getElementById('thinking-toggle');
+    if (thinkingToggle) {
+        thinkingToggle.addEventListener('change', function (e) {
+            if (typeof setLLMThinkingEnabled === 'function') {
+                setLLMThinkingEnabled(e.target.checked);
+            }
+        });
+    }
+
+    // Nút settings
+    var settingsBtn = document.getElementById('settings-button');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', toggleSettingsPanel);
+    }
+
+    // History toggle
+    var historyToggle = document.getElementById('history-toggle');
+    if (historyToggle) {
+        historyToggle.addEventListener('change', function (e) {
+            setChatHistoryEnabled(e.target.checked);
+        });
+    }
+
+    // History max turns
+    var historyMaxTurns = document.getElementById('history-max-turns');
+    if (historyMaxTurns) {
+        historyMaxTurns.addEventListener('change', function (e) {
+            setChatHistoryMaxTurns(parseInt(e.target.value, 10) || 0);
+        });
+    }
+
+    // View History button
+    var viewHistoryBtn = document.getElementById('view-history-button');
+    if (viewHistoryBtn) {
+        viewHistoryBtn.addEventListener('click', openHistoryDialog);
+    }
+
+    // Clear History button
+    var clearHistoryBtn = document.getElementById('clear-history-button');
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', function () {
+            if (confirm('Xóa toàn bộ lịch sử chat?')) {
+                clearAllHistory();
+            }
+        });
+    }
+
+    // History dialog: close button
+    var historyCloseBtn = document.getElementById('history-close-button');
+    if (historyCloseBtn) {
+        historyCloseBtn.addEventListener('click', closeHistoryDialog);
+    }
+
+    // History dialog: overlay click to close
+    var historyOverlay = document.getElementById('history-overlay');
+    if (historyOverlay) {
+        historyOverlay.addEventListener('click', function (e) {
+            if (e.target === historyOverlay) closeHistoryDialog();
+        });
+    }
+
+    // History dialog: tab buttons
+    var tabDb = document.getElementById('history-tab-db');
+    if (tabDb) {
+        tabDb.addEventListener('click', function () {
+            _historyCurrentTab = 'db';
+            _historyCurrentPage = 1;
+            _updateHistoryTabUI();
+            _loadHistoryPage();
+        });
+    }
+    var tabSession = document.getElementById('history-tab-session');
+    if (tabSession) {
+        tabSession.addEventListener('click', function () {
+            _historyCurrentTab = 'session';
+            _updateHistoryTabUI();
+            _loadHistoryPage();
+        });
+    }
+
+    // Nút attach: click → mở file picker
+    var attachBtn = document.getElementById('attach-button');
+    if (attachBtn) {
+        attachBtn.addEventListener('click', function () {
+            var fileInput = document.getElementById('file-input');
+            if (fileInput) fileInput.click();
+        });
+    }
+
+    // File input: change → xử lý file đính kèm
+    var fileInput = document.getElementById('file-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', function (e) {
+            var file = e.target.files && e.target.files[0];
+            if (file) handleFileAttachment(file);
+        });
+    }
+
+    // Nút xóa attachment
+    var removeAttachBtn = document.getElementById('attachment-remove');
+    if (removeAttachBtn) {
+        removeAttachBtn.addEventListener('click', clearAttachment);
     }
 
     // Help dialog: đóng khi click nút X
@@ -1041,6 +1969,7 @@ if (typeof module !== 'undefined' && module.exports) {
         GREETING_TRIGGERS: GREETING_TRIGGERS,
         sendMessage: sendMessage,
         getBotReply: getBotReply,
+        getFinalFallbackMessage: getFinalFallbackMessage,
         extractWebSearchQuery: extractWebSearchQuery,
         showLoadingIndicator: showLoadingIndicator,
         hideLoadingIndicator: hideLoadingIndicator,
@@ -1090,7 +2019,50 @@ if (typeof module !== 'undefined' && module.exports) {
         webSearchAdapter: webSearchAdapter,
         googleSearch: googleSearch,
         duckDuckGoSearch: duckDuckGoSearch,
+        llmAdapter: llmAdapter,
+        loadLLMModel: loadLLMModel,
+        llmGenerate: llmGenerate,
+        llmGenerateWithImage: llmGenerateWithImage,
+        isWebGPUSupported: isWebGPUSupported,
+        isLLMReady: isLLMReady,
+        getLLMStatus: getLLMStatus,
+        getLLMLastError: getLLMLastError,
+        cancelLLMGeneration: cancelLLMGeneration,
+        isLLMGenerating: isLLMGenerating,
+        showLLMCancelButton: showLLMCancelButton,
+        hideLLMCancelButton: hideLLMCancelButton,
+        createStreamingBotMessage: createStreamingBotMessage,
+        createStreamingCallback: createStreamingCallback,
+        finalizeStreamingMessage: finalizeStreamingMessage,
+        removeStreamingMessage: removeStreamingMessage,
+        setLLMModelId: setLLMModelId,
+        setLLMThinkingEnabled: setLLMThinkingEnabled,
+        isLLMThinkingEnabled: isLLMThinkingEnabled,
+        setSendingDisabled: setSendingDisabled,
+        setSendingEnabled: setSendingEnabled,
+        showLLMLoadingStatus: showLLMLoadingStatus,
+        hideLLMLoadingStatus: hideLLMLoadingStatus,
+        onLLMStatusChange: onLLMStatusChange,
+        setLLMStatusCallback: setLLMStatusCallback,
+        handleFileAttachment: handleFileAttachment,
+        clearAttachment: clearAttachment,
+        consumeAttachment: consumeAttachment,
+        get _attachedImage() { return _attachedImage; },
+        set _attachedImage(val) { _attachedImage = val; },
         toggleMacrosPanel: toggleMacrosPanel,
+        toggleSettingsPanel: toggleSettingsPanel,
+        openHistoryDialog: openHistoryDialog,
+        closeHistoryDialog: closeHistoryDialog,
+        clearAllHistory: clearAllHistory,
+        loadRecentHistoryToChat: loadRecentHistoryToChat,
+        addChatHistory: addChatHistory,
+        getChatHistoryForLLM: getChatHistoryForLLM,
+        clearChatHistory: clearChatHistory,
+        setChatHistoryEnabled: setChatHistoryEnabled,
+        isChatHistoryEnabled: isChatHistoryEnabled,
+        setChatHistoryMaxTurns: setChatHistoryMaxTurns,
+        getChatHistoryMaxTurns: getChatHistoryMaxTurns,
+        get _chatHistory() { return _chatHistory; },
         updateMacrosList: updateMacrosList,
         toggleRulesPanel: toggleRulesPanel,
         updateRulesList: updateRulesList,
@@ -1103,6 +2075,7 @@ if (typeof module !== 'undefined' && module.exports) {
         set currentLang(val) { currentLang = val; },
         USERNAME: USERNAME,
         FALLBACK_API_URL: FALLBACK_API_URL,
-        FALLBACK_API_TIMEOUT: FALLBACK_API_TIMEOUT
+        FALLBACK_API_TIMEOUT: FALLBACK_API_TIMEOUT,
+        LLM_MODEL_ID_CONFIG: LLM_MODEL_ID_CONFIG
     };
 }

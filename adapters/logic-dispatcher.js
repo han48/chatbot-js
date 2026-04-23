@@ -38,7 +38,12 @@ function logicAdapterDispatcher(rs, args) {
         try {
             _adapterPath.length = pathLenBefore;
             var result = adapters[i](rs, args);
-            if (isValidAdapterResult(result)) return result;
+            // bestMatchAdapter trả {answer, score}, các adapter khác trả string
+            if (result && typeof result === 'object' && result.answer) {
+                if (isValidAdapterResult(result.answer)) return result.answer;
+            } else if (isValidAdapterResult(result)) {
+                return result;
+            }
         } catch (err) {
             continue;
         }

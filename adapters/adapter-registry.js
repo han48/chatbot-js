@@ -14,7 +14,8 @@ var ADAPTER_DISPLAY_NAMES = {
     logic_adapter: { vi: 'Logic Adapter', en: 'Logic Adapter', ja: 'ロジックアダプター' },
     rivescript: { vi: 'RiveScript', en: 'RiveScript', ja: 'RiveScript' },
     fallback_api: { vi: 'Fallback API', en: 'Fallback API', ja: 'Fallback API' },
-    web_search: { vi: 'Tìm kiếm Web', en: 'Web Search', ja: 'ウェブ検索' }
+    web_search: { vi: 'Tìm kiếm Web', en: 'Web Search', ja: 'ウェブ検索' },
+    llm_adapter: { vi: 'LLM (WebGPU)', en: 'LLM (WebGPU)', ja: 'LLM（WebGPU）' }
 };
 
 function getAdapterDisplayName(adapterKey) {
@@ -32,7 +33,8 @@ function registerAdapters(bot, lang) {
         specific_response: specificResponseAdapter,
         time_adapter: timeAdapter,
         unit_conversion: unitConversionAdapter,
-        web_search: webSearchAdapter
+        web_search: webSearchAdapter,
+        llm_adapter: llmAdapter
     };
 
     var adapterNames = Object.keys(ADAPTER_REGISTRY);

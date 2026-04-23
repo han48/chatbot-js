@@ -79,8 +79,8 @@ describe('sendMessage', () => {
         const confSpan = botMsg[0].querySelector('.confidence');
         expect(confSpan).not.toBeNull();
         expect(confSpan.classList.contains('confidence-low')).toBe(true);
-        // Since callFallbackAPI stub returns null, should show RiveScript reply + error message
-        expect(botMsg[0].querySelector('.message-text').textContent).toContain('Dịch vụ bổ sung không khả dụng');
+        // Since callFallbackAPI stub returns null, should show final fallback message
+        expect(botMsg[0].querySelector('.message-text').textContent).toContain('không tìm được câu trả lời');
     });
 
     it('should show error when bot is not initialized', async () => {
