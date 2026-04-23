@@ -440,3 +440,149 @@ Dữ liệu hội thoại (Brain Data) được lưu trong các tệp `.rive` ri
 1. THE Hikari_Chatbot SHALL tổ chức các adapter thành các tệp riêng biệt trong thư mục `adapters/`: `text-similarity.js`, `specific-response.js`, `time-adapter.js`, `math-adapter.js`, `unit-conversion.js`, `best-match.js`, `logic-dispatcher.js`, `adapter-registry.js`, `web-search.js`
 2. THE `index.html` SHALL tải tất cả các tệp adapter qua thẻ `<script>` trước `app.js`
 3. WHEN chạy trong môi trường Node/test, THE các tệp adapter SHALL export hàm qua `globalThis` để `app.js` có thể sử dụng
+
+### Yêu cầu 26: LLM Adapter (WebGPU — Chạy LLM trực tiếp trên trình duyệt)
+
+**User Story:** Là một người dùng, tôi muốn chatbot có thể sử dụng mô hình ngôn ngữ lớn (LLM) chạy trực tiếp trên trình duyệt qua WebGPU, để tôi nhận được phản hồi thông minh hơn mà không cần server backend.
+
+#### Tiêu chí chấp nhận
+
+1. THE Hikari_Chatbot SHALL tích hợp LLM_Adapter sử dụng thư viện `@huggingface/transformers` (tải qua CDN) để chạy mô hình LLM trực tiếp trên trình duyệt qua WebGPU
+2. THE LLM_Adapter SHALL sử dụng model mặc định `onnx-community/Qwen3.5-0.8B-ONNX-OPT`, có thể thay đổi qua hàm `setLLMModelId()` trước khi load
+3. WHEN LLM đang generate text, THE LLM_Adapter SHALL hỗ trợ streaming token-by-token qua callback `onToken(accumulatedText)`
+4. WHERE thinking mode được bật, THE LLM_Adapter SHALL bao gồm block `<think>...</think>` trong prompt để hiển thị quá trình suy nghĩ của LLM
+5. THE LLM_Adapter SHALL hỗ trợ xử lý ảnh (multimodal) qua hàm `llmGenerateWithImage(userMessage, imageDataURL, onToken, history)`, resize ảnh về 448×448 trước khi gửi cho model
+6. THE LLM_Adapter SHALL hỗ trợ hủy bỏ quá trình generate đang chạy qua hàm `cancelLLMGeneration()` sử dụng `InterruptableStoppingCriteria`
+7. THE LLM_Adapter SHALL thông báo trạng thái loading qua callback được đăng ký bởi `setLLMStatusCallback(fn)` với các action: `loading_start`, `loading_progress`, `loading_done`, `loading_error`
+8. IF WebGPU không được hỗ trợ trong trình duyệt, THEN THE LLM_Adapter SHALL trả về `null` và ghi nhận lỗi vào `_llmLastError`
+9. THE LLM_Adapter SHALL giải phóng bộ nhớ GPU sau mỗi lần generate bằng cách dispose `past_key_values`
+10. THE Hikari_Chatbot SHALL cung cấp các hàm kiểm tra trạng thái: `isWebGPUSupported()`, `isLLMReady()`, `isLLMGenerating()`, `getLLMStatus()`, `getLLMLastError()`
+
+### Yêu cầu 27: Chat History (Lịch sử hội thoại)
+
+**User Story:** Là một người dùng, tôi muốn chatbot ghi nhớ lịch sử hội thoại trong phiên làm việc và lưu persistent vào IndexedDB, để LLM có thể trả lời dựa trên ngữ cảnh cuộc trò chuyện.
+
+#### Tiêu chí chấp nhận
+
+1. THE Hikari_Chatbot SHALL lưu lịch sử hội thoại trong bộ nhớ session qua biến `_chatHistory` (mảng các object `{role, content}`)
+2. WHEN chat history được bật, THE Hikari_Chatbot SHALL lưu persistent mỗi tin nhắn vào IndexedDB qua module `data/chat-history-db.js`
+3. THE Hikari_Chatbot SHALL cung cấp hàm `setChatHistoryEnabled(bool)` và `isChatHistoryEnabled()` để bật/tắt tính năng lưu history
+4. THE Hikari_Chatbot SHALL cung cấp hàm `setChatHistoryMaxTurns(n)` và `getChatHistoryMaxTurns()` để giới hạn số turn lịch sử gửi cho LLM
+5. THE Hikari_Chatbot SHALL cung cấp hàm `getChatHistoryForLLM()` trả về mảng history đã trim theo `maxTurns` để gửi cho LLM
+6. THE Hikari_Chatbot SHALL cung cấp hàm `clearChatHistory()` để xóa lịch sử session trong bộ nhớ
+7. WHEN khởi động ứng dụng, THE Hikari_Chatbot SHALL tải 10 tin nhắn gần nhất từ IndexedDB và hiển thị vào chat qua `loadRecentHistoryToChat()`
+
+### Yêu cầu 28: File Attachment — Đính kèm ảnh
+
+**User Story:** Là một người dùng, tôi muốn đính kèm ảnh vào tin nhắn gửi cho chatbot, để LLM có thể phân tích và mô tả nội dung ảnh.
+
+#### Tiêu chí chấp nhận
+
+1. THE Chat_Interface SHALL bao gồm nút đính kèm (`#attach-button`) và input file ẩn (`#file-input`) để người dùng chọn ảnh
+2. WHEN người dùng chọn ảnh, THE Chat_Interface SHALL hiển thị preview ảnh trong khu vực `#attachment-preview` với thumbnail (`#attachment-thumb`), tên file (`#attachment-name`), và nút xóa (`#attachment-remove`)
+3. WHEN người dùng gửi tin nhắn kèm ảnh, THE Hikari_Chatbot SHALL gửi cả text và ảnh (dưới dạng data URL) đến LLM_Adapter qua `llmGenerateWithImage()`
+4. WHEN tin nhắn user có ảnh đính kèm, THE `appendMessage()` SHALL hiển thị thumbnail ảnh trong tin nhắn với CSS class `.message-image`
+5. THE Hikari_Chatbot SHALL cung cấp hàm `clearAttachment()` để xóa ảnh đính kèm hiện tại và `consumeAttachment()` để lấy và xóa ảnh khi gửi
+
+### Yêu cầu 29: Streaming Messages (Hiển thị tin nhắn realtime)
+
+**User Story:** Là một người dùng, tôi muốn thấy phản hồi của LLM xuất hiện dần dần theo từng token, để trải nghiệm tương tác tự nhiên hơn thay vì chờ đợi toàn bộ phản hồi.
+
+#### Tiêu chí chấp nhận
+
+1. WHEN LLM bắt đầu generate, THE Chat_Interface SHALL tạo một tin nhắn bot trống với CSS class `.streaming` qua hàm `createStreamingBotMessage()`
+2. WHEN LLM generate từng token, THE Chat_Interface SHALL cập nhật nội dung tin nhắn streaming realtime qua callback được tạo bởi `createStreamingCallback(element)`
+3. THE streaming callback SHALL tách nội dung thành thinking block (`.llm-thinking-block`) và response block dựa trên tag `<think>...</think>`
+4. WHEN LLM hoàn thành generate, THE Chat_Interface SHALL finalize tin nhắn streaming qua `finalizeStreamingMessage(element, finalText, confidence, adapterPath, responseTime)`, xóa class `.streaming`
+5. THE Chat_Interface SHALL cung cấp hàm `removeStreamingMessage(element)` để xóa tin nhắn streaming khi bị cancel
+6. THE CSS SHALL định dạng `.llm-thinking-block`, `.llm-thinking-label`, `.llm-thinking-content` để hiển thị thinking block phân biệt với response
+
+### Yêu cầu 30: LLM Cancel Button (Nút hủy generate)
+
+**User Story:** Là một người dùng, tôi muốn có thể hủy bỏ quá trình LLM đang generate, để không phải chờ đợi khi tôi muốn gửi câu hỏi khác.
+
+#### Tiêu chí chấp nhận
+
+1. WHEN LLM bắt đầu generate, THE Chat_Interface SHALL hiển thị nút Cancel qua hàm `showLLMCancelButton()`
+2. WHEN người dùng nhấn nút Cancel, THE Hikari_Chatbot SHALL gọi `cancelLLMGeneration()` để dừng quá trình generate
+3. WHEN LLM hoàn thành hoặc bị cancel, THE Chat_Interface SHALL ẩn nút Cancel qua hàm `hideLLMCancelButton()`
+4. THE CSS SHALL định dạng `.llm-cancel-container` và `.llm-cancel-button` cho nút Cancel
+
+### Yêu cầu 31: LLM Loading Status (Hiển thị trạng thái tải model)
+
+**User Story:** Là một người dùng, tôi muốn thấy trạng thái tải model LLM, để biết chatbot đang chuẩn bị và không bị nhầm lẫn với lỗi.
+
+#### Tiêu chí chấp nhận
+
+1. WHEN LLM model bắt đầu tải, THE Chat_Interface SHALL hiển thị trạng thái loading qua hàm `showLLMLoadingStatus(message)` với CSS class `.llm-loading-status`
+2. WHEN trạng thái LLM thay đổi, THE `onLLMStatusChange(action, message)` SHALL cập nhật hiển thị tương ứng: `loading_start`/`loading_progress` → hiển thị status, `loading_done`/`loading_error` → ẩn status
+3. WHEN LLM model tải xong hoặc gặp lỗi, THE Chat_Interface SHALL ẩn trạng thái loading qua hàm `hideLLMLoadingStatus()`
+
+### Yêu cầu 32: Send Button State Management (Quản lý trạng thái nút gửi)
+
+**User Story:** Là một người dùng, tôi muốn nút gửi bị vô hiệu hóa khi chatbot đang xử lý, để tránh gửi nhiều tin nhắn cùng lúc.
+
+#### Tiêu chí chấp nhận
+
+1. WHEN Hikari_Chatbot bắt đầu xử lý tin nhắn, THE Chat_Interface SHALL vô hiệu hóa nút gửi và input qua hàm `setSendingDisabled()`
+2. WHEN Hikari_Chatbot hoàn thành xử lý, THE Chat_Interface SHALL kích hoạt lại nút gửi và input qua hàm `setSendingEnabled()`
+3. THE CSS SHALL định dạng trạng thái vô hiệu hóa với class `.disabled`
+
+### Yêu cầu 33: Settings Panel (Bảng cài đặt)
+
+**User Story:** Là một người dùng, tôi muốn có bảng cài đặt để tùy chỉnh hành vi của chatbot, bao gồm thinking mode, lưu history, và số turn history.
+
+#### Tiêu chí chấp nhận
+
+1. THE Chat_Interface SHALL bao gồm nút cài đặt (`#settings-button`) để mở/đóng Settings Panel (`#settings-panel`)
+2. THE Settings Panel SHALL bao gồm toggle bật/tắt thinking mode (`#thinking-toggle`) cho LLM
+3. THE Settings Panel SHALL bao gồm toggle bật/tắt lưu chat history (`#history-toggle`)
+4. THE Settings Panel SHALL bao gồm input số để cấu hình số turn history tối đa gửi cho LLM (`#history-max-turns`)
+5. THE Hikari_Chatbot SHALL cung cấp hàm `toggleSettingsPanel()` để bật/tắt hiển thị Settings Panel
+
+### Yêu cầu 34: History Dialog (Dialog xem lịch sử chat)
+
+**User Story:** Là một người dùng, tôi muốn xem và quản lý lịch sử chat, bao gồm cả lịch sử trong session và lịch sử lưu trong IndexedDB.
+
+#### Tiêu chí chấp nhận
+
+1. THE Chat_Interface SHALL bao gồm nút xem lịch sử (`#view-history-button`) để mở History Dialog (`#history-overlay`)
+2. THE History Dialog SHALL hiển thị 2 tab: tab IndexedDB (`#history-tab-db`) và tab Session (`#history-tab-session`)
+3. THE History Dialog SHALL hỗ trợ phân trang (pagination) qua `#history-paging` để duyệt qua nhiều tin nhắn
+4. THE History Dialog SHALL bao gồm nút xóa toàn bộ lịch sử (`#clear-history-button`) gọi hàm `clearAllHistory()`
+5. THE History Dialog SHALL bao gồm nút đóng (`#history-close-button`) gọi hàm `closeHistoryDialog()`
+6. THE Hikari_Chatbot SHALL cung cấp hàm `openHistoryDialog()` và `closeHistoryDialog()` để mở/đóng dialog
+
+### Yêu cầu 35: IndexedDB Chat History (Lưu trữ persistent)
+
+**User Story:** Là một nhà phát triển, tôi muốn lịch sử chat được lưu persistent vào IndexedDB, để người dùng không mất lịch sử khi tải lại trang.
+
+#### Tiêu chí chấp nhận
+
+1. THE Hikari_Chatbot SHALL bao gồm module `data/chat-history-db.js` quản lý IndexedDB với database `HikariChatHistory`, object store `messages` (keyPath: `id`, autoIncrement), và index `timestamp`
+2. THE module SHALL cung cấp hàm `saveChatMessage(role, content, lang)` để lưu một tin nhắn với timestamp tự động
+3. THE module SHALL cung cấp hàm `getRecentMessages(count)` trả về N tin nhắn gần nhất sắp xếp theo timestamp tăng dần (cũ → mới)
+4. THE module SHALL cung cấp hàm `getMessagesPage(page, pageSize)` trả về object `{messages, total, page, totalPages}` để hỗ trợ phân trang
+5. THE module SHALL cung cấp hàm `clearAllChatMessages()` để xóa toàn bộ tin nhắn trong IndexedDB
+6. IF IndexedDB không khả dụng (môi trường Node/test), THEN THE module SHALL gracefully degrade bằng cách export các hàm stub trả về Promise resolve
+
+### Yêu cầu 36: Fallback Chain mở rộng (LLM Adapter)
+
+**User Story:** Là một người dùng, tôi muốn chatbot thử LLM Adapter như một bước fallback cuối cùng trước khi hiển thị thông báo lỗi, để tôi luôn nhận được phản hồi hữu ích nhất có thể.
+
+#### Tiêu chí chấp nhận
+
+1. THE Hikari_Chatbot SHALL áp dụng fallback chain mở rộng theo thứ tự: RiveScript → bestMatch → Fallback API → LLM_Adapter → final fallback message
+2. WHEN Fallback API thất bại và LLM_Adapter sẵn sàng (WebGPU supported, model loaded), THE Hikari_Chatbot SHALL thử gọi LLM_Adapter với streaming
+3. WHEN tất cả fallback đều thất bại, THE Hikari_Chatbot SHALL hiển thị final fallback message qua hàm `getFinalFallbackMessage()` kèm thông tin lỗi LLM nếu có
+4. THE `getFinalFallbackMessage()` SHALL trả về thông báo đa ngôn ngữ (vi/en/ja) kèm thông tin debug từ `getLLMLastError()` nếu có lỗi LLM
+
+### Yêu cầu 37: appendMessage mở rộng — Hiển thị ảnh đính kèm
+
+**User Story:** Là một người dùng, tôi muốn thấy ảnh tôi đã đính kèm hiển thị trong tin nhắn của mình, để tôi biết ảnh đã được gửi thành công.
+
+#### Tiêu chí chấp nhận
+
+1. THE `appendMessage(text, sender, confidence, adapterPath, responseTime, imageDataURL)` SHALL chấp nhận tham số tùy chọn `imageDataURL` để hiển thị ảnh đính kèm trong tin nhắn user
+2. WHEN `imageDataURL` được cung cấp và sender là "user", THE `appendMessage()` SHALL render thẻ `<img>` với src là imageDataURL trong tin nhắn
+3. THE CSS SHALL định dạng `.message-image` với kích thước phù hợp (max-width, border-radius) để hiển thị ảnh trong tin nhắn

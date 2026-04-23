@@ -14,6 +14,8 @@ Ngoài ra, ứng dụng hỗ trợ xử lý tiếng Việt có dấu (dual-reply
 
 Ứng dụng còn tích hợp Web Search Adapter (tìm kiếm web qua DuckDuckGo Instant Answer API), hệ thống tiền xử lý dữ liệu (Preprocessed Data Pipeline) để tối ưu hóa so khớp văn bản với TF-IDF cosine + synset preprocessed, thuật toán tương đồng nâng cao gồm 4 thuật toán (Levenshtein + Jaccard + Cosine + Synset), input normalization nâng cao (loại bỏ dấu câu + modal particles), hiển thị thời gian xử lý (Response Time Display), và URL linkification trong tin nhắn bot.
 
+Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ngữ lớn trực tiếp trên trình duyệt qua WebGPU (Transformers.js, model Qwen3.5-0.8B), lưu trữ lịch sử hội thoại persistent vào IndexedDB, đính kèm ảnh (multimodal), streaming tin nhắn realtime, nút Cancel generate, hiển thị trạng thái tải model, quản lý trạng thái nút gửi, Settings Panel, History Dialog, và fallback chain mở rộng (RiveScript → bestMatch → Fallback API → LLM Adapter → final fallback).
+
 ### Quyết định thiết kế chính
 
 | Quyết định | Lựa chọn | Lý do |
@@ -46,6 +48,22 @@ Ngoài ra, ứng dụng hỗ trợ xử lý tiếng Việt có dấu (dual-reply
 | Adapter Path Tracking | Biến toàn cục `_adapterPath` (mảng) | Đơn giản, không cần dependency injection; mỗi adapter push tên vào mảng |
 | Help Dialog | Modal overlay với nội dung từ JSON | Tách nội dung khỏi code, hỗ trợ đa ngôn ngữ dễ dàng |
 | Favicon | Inline SVG trong `<link rel="icon">` | Tránh lỗi 404, không cần tệp favicon riêng |
+| LLM Adapter | Transformers.js (`@huggingface/transformers`) qua CDN, model Qwen3.5-0.8B-ONNX-OPT, device webgpu | Chạy LLM hoàn toàn trên trình duyệt, không cần backend; WebGPU cho hiệu năng tốt nhất |
+| LLM Model Loading | Lazy load — chỉ load khi cần lần đầu, singleton state | Tránh tải model không cần thiết; model lớn (~500MB) chỉ tải 1 lần |
+| LLM Thinking Mode | Prefix `<think>\n` trong prompt khi bật | Kích hoạt chain-of-thought của Qwen3.5; tắt mặc định để tiết kiệm token |
+| LLM Streaming | `TextStreamer` với `callback_function` tích lũy token | Hiển thị phản hồi realtime, cải thiện UX khi LLM generate chậm |
+| LLM Cancel | `InterruptableStoppingCriteria.interrupt()` | API chính thức của Transformers.js để dừng generate an toàn |
+| LLM Memory Management | Dispose `past_key_values` sau mỗi generate | Giải phóng bộ nhớ GPU, tránh memory leak khi generate nhiều lần |
+| Chat History Storage | Session: `_chatHistory` array; Persistent: IndexedDB qua `data/chat-history-db.js` | Session cho LLM context; IndexedDB cho persistence qua reload |
+| Chat History Limit | `setChatHistoryMaxTurns(n)` giới hạn số turn gửi cho LLM | Tránh context window overflow; người dùng kiểm soát được |
+| File Attachment | FileReader API → data URL → gửi cho `llmGenerateWithImage()` | Không cần upload server; data URL truyền trực tiếp cho LLM |
+| Streaming UI | Tạo element trống, cập nhật innerHTML realtime, finalize khi xong | Hiển thị token ngay khi có, không cần buffer toàn bộ response |
+| Thinking Block UI | Tách `<think>...</think>` thành block riêng với CSS collapsible | Hiển thị quá trình suy nghĩ tách biệt với câu trả lời cuối |
+| Fallback Chain | RiveScript → bestMatch → Fallback API → LLM Adapter → final fallback | LLM là fallback cuối cùng vì tốn tài nguyên nhất; đảm bảo luôn có phản hồi |
+| Settings Panel | Toggle/input trong panel ẩn, toggle qua `toggleSettingsPanel()` | Giao diện đơn giản, không cần modal; cài đặt ít nên không cần trang riêng |
+| History Dialog | Modal overlay với 2 tab (IndexedDB/Session) + pagination | Tách biệt 2 nguồn dữ liệu; pagination tránh render quá nhiều DOM |
+| IndexedDB Schema | Object store `messages` với index `timestamp` | Index timestamp cho phép query theo thứ tự thời gian hiệu quả |
+| llm_adapter Display Name | Thêm vào `ADAPTER_DISPLAY_NAMES` | Breadcrumb hiển thị "LLM Adapter" khi LLM xử lý tin nhắn |
 
 ## Kiến trúc
 
@@ -104,6 +122,16 @@ graph TD
     PP -->|TF-IDF + synset| P
     C -->|linkify| LF[URL Linkification]
     LF -->|clickable links| H
+    C -->|fallback cuối| LA[LLM Adapter — adapters/llm-adapter.js]
+    LA -->|WebGPU| LM[Transformers.js — Qwen3.5-0.8B]
+    LA -->|streaming tokens| H
+    C -->|lưu history| IDB[IndexedDB — data/chat-history-db.js]
+    C -->|load history| IDB
+    C -->|attach image| FA[File Attachment — FileReader API]
+    FA -->|imageDataURL| LA
+    C -->|settings| SP[Settings Panel — thinking/history toggles]
+    C -->|history dialog| HD[History Dialog — 2 tabs + pagination]
+    HD -->|query| IDB
 ```
 
 ### Luồng xử lý tin nhắn
@@ -118,6 +146,7 @@ sequenceDiagram
     participant RS as RiveScript Engine
     participant BM as bestMatchAdapter
     participant API as Fallback API
+    participant LLM as LLM Adapter (WebGPU)
 
     U->>UI: Nhập tin nhắn + Enter/Gửi
     UI->>JS: Lấy nội dung input
@@ -159,7 +188,14 @@ sequenceDiagram
                     API-->>JS: Phản hồi API
                     JS->>UI: Hiển thị phản hồi API + confidence (đỏ) + adapter breadcrumb
                 else API thất bại / timeout
-                    JS->>UI: Hiển thị phản hồi mặc định RiveScript + thông báo lỗi + confidence (đỏ)
+                    JS->>LLM: llmAdapter(query, onToken, history) — streaming
+                    alt LLM sẵn sàng (WebGPU supported)
+                        LLM-->>UI: Streaming tokens realtime (createStreamingBotMessage)
+                        LLM-->>JS: Phản hồi LLM hoàn chỉnh
+                        JS->>UI: finalizeStreamingMessage + adapter breadcrumb
+                    else LLM không khả dụng
+                        JS->>UI: Hiển thị getFinalFallbackMessage() + thông tin lỗi LLM
+                    end
                 end
                 JS->>UI: Ẩn loading indicator
             end
@@ -326,6 +362,38 @@ Biến toàn cục được populate: `SPECIFIC_RESPONSES`, `QA_DATASET`, `ADAPT
 | `tokenizeForSimilarity(text, lang)` | Tokenize input: lowercase, bỏ dấu (vi), bỏ punctuation, tách từ | `text: string`, `lang: string` | `string[]` |
 | `initializeApp()` | Hàm khởi tạo chính: load brains, load data, load preprocessed data, init bot, gắn event listeners (bao gồm help dialog) | — | `Promise<void>` |
 
+#### Các hàm mới (LLM Adapter, Chat History, File Attachment, Streaming, UI)
+
+| Hàm | Mô tả | Tham số | Trả về |
+|---|---|---|---|
+| `addChatHistory(role, content)` | Thêm một turn vào `_chatHistory` session và lưu vào IndexedDB nếu history enabled | `role: string`, `content: string` | `void` |
+| `getChatHistoryForLLM()` | Lấy lịch sử hội thoại đã trim theo `maxTurns` để gửi cho LLM | — | `Array<{role, content}>` |
+| `clearChatHistory()` | Xóa `_chatHistory` session trong bộ nhớ | — | `void` |
+| `setChatHistoryEnabled(bool)` | Bật/tắt tính năng lưu chat history | `bool: boolean` | `void` |
+| `isChatHistoryEnabled()` | Kiểm tra chat history có đang bật không | — | `boolean` |
+| `setChatHistoryMaxTurns(n)` | Đặt số turn tối đa gửi cho LLM | `n: number` | `void` |
+| `getChatHistoryMaxTurns()` | Lấy số turn tối đa hiện tại | — | `number` |
+| `loadRecentHistoryToChat()` | Tải 10 tin nhắn gần nhất từ IndexedDB và hiển thị vào chat khi khởi động | — | `Promise<void>` |
+| `handleFileAttachment(file)` | Xử lý file ảnh được chọn: đọc data URL, hiển thị preview | `file: File` | `void` |
+| `clearAttachment()` | Xóa ảnh đính kèm hiện tại và ẩn preview | — | `void` |
+| `consumeAttachment()` | Lấy data URL ảnh đính kèm hiện tại và xóa nó | — | `string \| null` |
+| `createStreamingBotMessage()` | Tạo element tin nhắn bot trống với class `.streaming` để cập nhật realtime | — | `HTMLElement` |
+| `createStreamingCallback(element)` | Tạo callback nhận token từ LLM, cập nhật nội dung element realtime, tách thinking block | `element: HTMLElement` | `function(accumulatedText): void` |
+| `finalizeStreamingMessage(element, finalText, confidence, adapterPath, responseTime)` | Finalize tin nhắn streaming: xóa class `.streaming`, thêm confidence/breadcrumb/time | `element: HTMLElement`, `finalText: string`, `confidence?: number`, `adapterPath?: string[]`, `responseTime?: number` | `void` |
+| `removeStreamingMessage(element)` | Xóa element tin nhắn streaming khỏi DOM (khi cancel) | `element: HTMLElement` | `void` |
+| `showLLMCancelButton()` | Hiển thị nút Cancel LLM generate | — | `void` |
+| `hideLLMCancelButton()` | Ẩn nút Cancel LLM generate | — | `void` |
+| `showLLMLoadingStatus(message)` | Hiển thị trạng thái loading model LLM trong message display | `message: string` | `void` |
+| `hideLLMLoadingStatus()` | Ẩn trạng thái loading model LLM | — | `void` |
+| `onLLMStatusChange(action, message)` | Callback nhận thông báo trạng thái từ LLM Adapter, cập nhật UI | `action: string`, `message: string` | `void` |
+| `setSendingDisabled()` | Vô hiệu hóa nút gửi và input khi đang xử lý | — | `void` |
+| `setSendingEnabled()` | Kích hoạt lại nút gửi và input sau khi xử lý xong | — | `void` |
+| `toggleSettingsPanel()` | Bật/tắt hiển thị Settings Panel | — | `void` |
+| `openHistoryDialog()` | Mở History Dialog, load dữ liệu từ IndexedDB | — | `Promise<void>` |
+| `closeHistoryDialog()` | Đóng History Dialog | — | `void` |
+| `clearAllHistory()` | Xóa toàn bộ lịch sử: IndexedDB + session | — | `Promise<void>` |
+| `getFinalFallbackMessage()` | Tạo thông báo fallback cuối cùng đa ngôn ngữ kèm thông tin lỗi LLM | — | `string` |
+
 #### Brain Data
 
 Dữ liệu hội thoại được lưu trong các tệp `.rive` riêng biệt, tải qua `brain.js`:
@@ -382,6 +450,20 @@ Các thành phần CSS chính:
 | `.help-dot` | Chấm tròn minh họa màu confidence (green/red) |
 | `@media (max-width: 768px)` | Responsive cho thiết bị di động |
 
+#### CSS mới (LLM, Streaming, History, Settings)
+
+| Selector | Mục đích |
+|---|---|
+| `.streaming` | Tin nhắn bot đang được LLM generate realtime |
+| `.llm-thinking-block` | Container cho thinking block `<think>...</think>` |
+| `.llm-thinking-label` | Label "Đang suy nghĩ..." cho thinking block |
+| `.llm-thinking-content` | Nội dung thinking, có thể collapsible |
+| `.llm-cancel-container` | Container cho nút Cancel LLM generate |
+| `.llm-cancel-button` | Nút Cancel LLM generate |
+| `.llm-loading-status` | Hiển thị trạng thái loading model LLM |
+| `.disabled` | Trạng thái vô hiệu hóa cho nút gửi và input |
+| `.message-image` | Ảnh đính kèm trong tin nhắn user (max-width, border-radius) |
+
 ## Mô hình Dữ liệu
 
 ### Trạng thái ứng dụng
@@ -394,6 +476,14 @@ let bot = null;              // Instance RiveScript hiện tại
 let currentLang = 'vi';      // Ngôn ngữ hiện tại
 const USERNAME = 'local-user'; // Username cố định cho RiveScript
 var _adapterPath = [];       // Tracking adapter chain cho mỗi lượt phản hồi
+
+// Chat History
+var _chatHistory = [];           // Lịch sử hội thoại session [{role, content}]
+var _chatHistoryEnabled = true;  // Bật/tắt lưu history
+var _chatHistoryMaxTurns = 10;   // Số turn tối đa gửi cho LLM
+
+// File Attachment
+var _attachmentDataURL = null;   // Data URL ảnh đính kèm hiện tại
 ```
 
 ### Cấu trúc Brain Data (RiveScript syntax)
@@ -505,8 +595,54 @@ var ADAPTER_DISPLAY_NAMES = {
     logic_adapter: { vi: 'Logic Adapter', en: 'Logic Adapter', ja: 'ロジックアダプター' },
     rivescript: { vi: 'RiveScript', en: 'RiveScript', ja: 'RiveScript' },
     fallback_api: { vi: 'Fallback API', en: 'Fallback API', ja: 'Fallback API' },
-    web_search: { vi: 'Tìm kiếm Web', en: 'Web Search', ja: 'ウェブ検索' }
+    web_search: { vi: 'Tìm kiếm Web', en: 'Web Search', ja: 'ウェブ検索' },
+    llm_adapter: { vi: 'LLM Adapter', en: 'LLM Adapter', ja: 'LLMアダプター' }
 };
+```
+
+### LLM Adapter State
+
+Trạng thái singleton của LLM Adapter (`adapters/llm-adapter.js`):
+
+```javascript
+var _llmProcessor = null;        // AutoProcessor instance
+var _llmModel = null;            // Qwen3_5ForConditionalGeneration instance
+var _llmLoading = false;         // Đang load model
+var _llmReady = false;           // Model đã sẵn sàng
+var _llmLoadError = null;        // Lỗi load model
+var _llmLastError = null;        // Lỗi generate cuối cùng
+var _llmStoppingCriteria = null; // InterruptableStoppingCriteria
+var _llmGenerating = false;      // Đang generate
+var _llmThinkingEnabled = false; // Thinking mode
+var LLM_MODEL_ID = 'onnx-community/Qwen3.5-0.8B-ONNX-OPT'; // Model ID
+var LLM_MAX_NEW_TOKENS = 256;    // Max tokens mỗi lần generate
+```
+
+### IndexedDB Schema
+
+Database `HikariChatHistory`, object store `messages`:
+
+```javascript
+{
+    id: number,        // autoIncrement, keyPath
+    role: string,      // 'user' | 'assistant'
+    content: string,   // Nội dung tin nhắn
+    lang: string,      // Ngôn ngữ ('vi' | 'en' | 'ja')
+    timestamp: number  // Date.now() — indexed
+}
+```
+
+### Chat History Structure
+
+Cấu trúc `_chatHistory` session (dùng cho LLM context):
+
+```javascript
+[
+    { role: 'user', content: 'Xin chào' },
+    { role: 'assistant', content: 'Xin chào! Mình là Hikari 🌟' },
+    // ... tối đa _chatHistoryMaxTurns * 2 entries
+]
+```
 ```
 
 ### Help Content Structure
@@ -798,6 +934,42 @@ Khi confidence < 50%, hệ thống áp dụng smart fallback theo thứ tự:
 
 **Validates: Requirements 24.1, 24.2**
 
+### Property 32: LLM Adapter trả về null khi WebGPU không hỗ trợ
+
+*For any* môi trường không có WebGPU (`navigator.gpu` undefined), `llmAdapter()` phải trả về `null` và `getLLMLastError()` phải trả về chuỗi không rỗng mô tả lỗi.
+
+**Validates: Requirements 26.8**
+
+### Property 33: Chat history trim theo maxTurns
+
+*For any* giá trị `maxTurns` ≥ 1 và *for any* `_chatHistory` có độ dài bất kỳ, `getChatHistoryForLLM()` phải trả về mảng có độ dài ≤ `maxTurns * 2` (mỗi turn gồm 1 user + 1 assistant message).
+
+**Validates: Requirements 27.4, 27.5**
+
+### Property 34: IndexedDB getRecentMessages trả về đúng thứ tự
+
+*For any* N tin nhắn được lưu theo thứ tự thời gian, `getRecentMessages(count)` phải trả về mảng sắp xếp theo timestamp tăng dần (cũ → mới), với độ dài ≤ `count`.
+
+**Validates: Requirements 35.3**
+
+### Property 35: getMessagesPage phân trang nhất quán
+
+*For any* tổng số tin nhắn `total` và `pageSize` ≥ 1, `getMessagesPage(page, pageSize)` phải trả về `totalPages = ceil(total / pageSize)`, và `messages.length ≤ pageSize`.
+
+**Validates: Requirements 35.4**
+
+### Property 36: Streaming callback tích lũy text đúng
+
+*For any* chuỗi token `t1, t2, ..., tn` được gọi lần lượt qua streaming callback, text tích lũy sau token thứ k phải bằng `t1 + t2 + ... + tk`.
+
+**Validates: Requirements 29.2**
+
+### Property 37: Fallback chain luôn trả về phản hồi không rỗng
+
+*For any* tin nhắn hợp lệ, kể cả khi tất cả fallback (bestMatch, Fallback API, LLM Adapter) đều thất bại, `getFinalFallbackMessage()` phải trả về chuỗi không rỗng.
+
+**Validates: Requirements 36.3, 36.4**
+
 ## Xử lý Lỗi
 
 ### Lỗi tải CDN
@@ -853,6 +1025,30 @@ Khi confidence < 50%, hệ thống áp dụng smart fallback theo thứ tự:
 - **Tình huống**: Người dùng yêu cầu chuyển đổi đơn vị không có trong danh sách
 - **Xử lý**: `unitConversionAdapter` trả về thông báo liệt kê các đơn vị được hỗ trợ
 - **Validates**: Yêu cầu 14.6.6
+
+### Lỗi LLM — WebGPU không hỗ trợ
+
+- **Tình huống**: Trình duyệt không hỗ trợ WebGPU (`navigator.gpu` undefined)
+- **Xử lý**: `llmAdapter` trả về `null`, ghi `_llmLastError = 'WebGPU not supported'`. Fallback chain tiếp tục sang `getFinalFallbackMessage()`
+- **Validates**: Yêu cầu 26.8, 36.3
+
+### Lỗi LLM — Load model thất bại
+
+- **Tình huống**: `loadLLMModel()` gặp lỗi (mạng, model không tồn tại, OOM)
+- **Xử lý**: Ghi `_llmLoadError`, gọi `_notifyStatus('loading_error', message)`. `llmAdapter` trả về `null`. UI ẩn loading status.
+- **Validates**: Yêu cầu 26.7, 31.2
+
+### Lỗi LLM — Generate thất bại
+
+- **Tình huống**: `llmGenerate()` hoặc `llmGenerateWithImage()` gặp lỗi runtime
+- **Xử lý**: Catch error, ghi `_llmLastError`, đặt `_llmGenerating = false`, trả về `null`. Fallback chain tiếp tục.
+- **Validates**: Yêu cầu 36.3
+
+### Lỗi IndexedDB — Không khả dụng
+
+- **Tình huống**: `indexedDB` undefined (môi trường Node/test, hoặc trình duyệt cũ)
+- **Xử lý**: `openChatHistoryDB()` reject với error. Các hàm DB export stub trong Node/test trả về Promise resolve với giá trị mặc định.
+- **Validates**: Yêu cầu 35.6
 
 ## Chiến lược Kiểm thử
 
@@ -923,6 +1119,27 @@ Tập trung vào các trường hợp cụ thể và edge cases:
 | Favicon | index.html có inline SVG favicon | 9.10 |
 | Brain files external | BRAIN_DATA loaded từ .rive files | 9.4, 9.5 |
 | Data files external | SPECIFIC_RESPONSES, QA_DATASET, etc. loaded từ JSON | 9.6, 9.7 |
+| LLM Adapter WebGPU check | isWebGPUSupported() trả về false trong Node/test | 26.8 |
+| LLM Adapter status | getLLMStatus() trả về object có ready/loading/error/modelId | 26.10 |
+| LLM Adapter cancel | cancelLLMGeneration() gọi interrupt() khi đang generate | 26.6 |
+| Chat history add | addChatHistory('user', 'hello') → _chatHistory.length tăng 1 | 27.1 |
+| Chat history trim | getChatHistoryForLLM() với maxTurns=2 → ≤ 4 entries | 27.4, 27.5 |
+| Chat history clear | clearChatHistory() → _chatHistory.length = 0 | 27.6 |
+| Chat history enabled | setChatHistoryEnabled(false) → isChatHistoryEnabled() = false | 27.3 |
+| File attachment clear | clearAttachment() → _attachmentDataURL = null, preview ẩn | 28.5 |
+| File attachment consume | consumeAttachment() trả về dataURL và xóa attachment | 28.5 |
+| Streaming message create | createStreamingBotMessage() tạo element với class .streaming | 29.1 |
+| Streaming finalize | finalizeStreamingMessage() xóa class .streaming | 29.4 |
+| LLM cancel button show/hide | showLLMCancelButton() / hideLLMCancelButton() toggle visibility | 30.1, 30.3 |
+| LLM loading status | showLLMLoadingStatus('Loading...') → element .llm-loading-status hiển thị | 31.1 |
+| Send button disabled | setSendingDisabled() → nút gửi có class .disabled | 32.1 |
+| Send button enabled | setSendingEnabled() → nút gửi không có class .disabled | 32.2 |
+| Settings panel toggle | toggleSettingsPanel() → #settings-panel toggle visibility | 33.5 |
+| History dialog open/close | openHistoryDialog() / closeHistoryDialog() toggle #history-overlay | 34.6 |
+| IndexedDB save message | saveChatMessage('user', 'hello', 'vi') → resolve với id | 35.2 |
+| IndexedDB clear | clearAllChatMessages() → countChatMessages() = 0 | 35.5 |
+| Final fallback message | getFinalFallbackMessage() trả về chuỗi không rỗng cho vi/en/ja | 36.3, 36.4 |
+| appendMessage with image | appendMessage('text', 'user', ..., ..., ..., dataURL) → có .message-image | 37.1, 37.2 |
 
 #### Property-Based Tests
 
@@ -961,6 +1178,12 @@ Mỗi property test tham chiếu đến thuộc tính đúng đắn tương ứn
 | Property 29 | `Feature: hikari-chatbot, Property 29: areSynonyms reflexive và symmetric` | `fc.constantFrom(...synonymWords)` | `areSynonyms(w,w)` = true; `areSynonyms(a,b)` = `areSynonyms(b,a)` |
 | Property 30 | `Feature: hikari-chatbot, Property 30: Preprocessed data fallback` | `fc.string().filter(s => s.trim().length > 0)` × `fc.constantFrom('vi','en','ja')` | bestMatchAdapter trả về kết quả khi _preprocessedData = null |
 | Property 31 | `Feature: hikari-chatbot, Property 31: linkifyText escape HTML` | `fc.string()` chứa `<`, `>`, `&` | HTML entities escaped; URL → thẻ `<a>` |
+| Property 32 | `Feature: hikari-chatbot, Property 32: LLM Adapter null khi không có WebGPU` | `fc.string().filter(s => s.trim().length > 0)` | `llmAdapter()` trả về null trong môi trường không có WebGPU |
+| Property 33 | `Feature: hikari-chatbot, Property 33: Chat history trim theo maxTurns` | `fc.tuple(fc.integer({min:1, max:20}), fc.array(fc.record({role: fc.constantFrom('user','assistant'), content: fc.string()})))` | `getChatHistoryForLLM().length ≤ maxTurns * 2` |
+| Property 34 | `Feature: hikari-chatbot, Property 34: IndexedDB getRecentMessages thứ tự` | `fc.array(fc.string(), {minLength: 1, maxLength: 20})` | Messages trả về theo timestamp tăng dần |
+| Property 35 | `Feature: hikari-chatbot, Property 35: getMessagesPage phân trang nhất quán` | `fc.tuple(fc.integer({min:1}), fc.integer({min:1, max:50}))` | `totalPages = ceil(total/pageSize)`, `messages.length ≤ pageSize` |
+| Property 36 | `Feature: hikari-chatbot, Property 36: Streaming callback tích lũy đúng` | `fc.array(fc.string(), {minLength: 1})` | Text tích lũy sau k token = concat(t1..tk) |
+| Property 37 | `Feature: hikari-chatbot, Property 37: Fallback chain luôn trả về không rỗng` | `fc.constantFrom('vi','en','ja')` | `getFinalFallbackMessage()` trả về chuỗi không rỗng |
 
 ### Cấu hình Property Tests
 
