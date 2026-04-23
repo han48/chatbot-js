@@ -43,12 +43,20 @@ function registerAdapters(bot, lang) {
         var entry = ADAPTER_REGISTRY[name];
         var fn = ADAPTER_FUNCTIONS[name];
 
-        if (entry.active && typeof fn === 'function') {
-            (function (adapterFn) {
-                bot.setSubroutine(name, function (rs, args) {
+        if (typeof fn === 'function') {
+            // Luôn đăng ký adapter, nhưng wrapper kiểm tra active flag
+            (function (adapterKey, adapterFn) {
+                bot.setSubroutine(adapterKey, function (rs, args) {
+                    // Kiểm tra active flag trước khi gọi adapter
+                    if (ADAPTER_REGISTRY[adapterKey] && ADAPTER_REGISTRY[adapterKey].active === false) {
+                        // Adapter bị disabled, trả về thông báo
+                        if (lang === 'en') return 'This adapter is currently disabled.';
+                        if (lang === 'ja') return 'このアダプターは現在無効です。';
+                        return 'Adapter này hiện đang bị vô hiệu hóa.';
+                    }
                     return adapterFn(rs, args);
                 });
-            })(fn);
+            })(name, fn);
         }
     }
 }

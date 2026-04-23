@@ -69,6 +69,7 @@ function setLLMModelId(modelId) {
  */
 function setLLMThinkingEnabled(enabled) {
     _llmThinkingEnabled = !!enabled;
+    try { localStorage.setItem('hikari_llm_thinking', _llmThinkingEnabled ? '1' : '0'); } catch (e) {}
 }
 
 /**

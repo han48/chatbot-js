@@ -554,8 +554,8 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
 - [x] 26. Checkpoint cuối — Đảm bảo tất cả test pass
   - Đảm bảo tất cả test pass sau khi tích hợp các tính năng mới.
 
-- [ ] 27. Mở rộng IndexedDB — Attachment Storage
-  - [ ] 27.1 Cập nhật `data/chat-history-db.js` — thêm object store `attachments`
+- [x] 27. Mở rộng IndexedDB — Attachment Storage
+  - [x] 27.1 Cập nhật `data/chat-history-db.js` — thêm object store `attachments`
     - Tăng `CHAT_HISTORY_DB_VERSION` lên 2, thêm migration trong `onupgradeneeded`
     - Tạo object store `attachments` (keyPath: `id`, autoIncrement) với index `messageId`
     - Viết `saveAttachment(messageId, file)` — đọc `File` thành `ArrayBuffer` qua `FileReader`, lưu vào store
@@ -567,14 +567,14 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
     - Cập nhật stub functions cho Node/test environment
     - _Yêu cầu: 38.1–38.8_
 
-  - [ ] 27.2 Tích hợp attachment storage vào `app.js`
+  - [x] 27.2 Tích hợp attachment storage vào `app.js`
     - Cập nhật `addChatHistory(role, content, file?)` — truyền `file` xuống `saveChatMessage()`
     - Cập nhật `sendMessage()` — khi có ảnh đính kèm, truyền `File` object vào `addChatHistory()`
     - Cập nhật `_loadHistoryPage()` trong History Dialog — với mỗi message có attachment, gọi `getAttachmentByMessageId()` và render thumbnail
     - _Yêu cầu: 38.7_
 
-- [ ] 28. Triển khai Voice Adapter
-  - [ ] 28.1 Tạo `adapters/voice-adapter.js`
+- [x] 28. Triển khai Voice Adapter
+  - [x] 28.1 Tạo `adapters/voice-adapter.js`
     - Khai báo `SPEECH_LOCALE_MAP` — ánh xạ `vi → vi-VN`, `en → en-US`, `ja → ja-JP`
     - Viết `initVoiceAdapter()` — kiểm tra `SpeechRecognition` và `SpeechSynthesis` support, trả về `{sttSupported, ttsSupported}`
     - Viết `getVoicesForLang(lang)` — lấy `speechSynthesis.getVoices()`, filter theo locale prefix, sort ưu tiên `localService: true`
@@ -588,13 +588,13 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
     - Export qua `globalThis` cho Node/test (stub functions)
     - _Yêu cầu: 39.2, 39.4, 39.9, 40.1, 40.3, 40.4, 40.7, 40.8_
 
-- [ ] 29. Triển khai Voice Input (STT) trong `app.js`
-  - [ ] 29.1 Thêm UI Voice Input vào `index.html`
+- [x] 29. Triển khai Voice Input (STT) trong `app.js`
+  - [x] 29.1 Thêm UI Voice Input vào `index.html`
     - Thêm `#voice-input-button` (nút microphone 🎤) vào input area, ẩn mặc định
     - Thêm CSS class `.voice-listening` (animation pulse) cho trạng thái đang nghe
     - _Yêu cầu: 39.1, 39.3_
 
-  - [ ] 29.2 Triển khai Voice Input logic trong `app.js`
+  - [x] 29.2 Triển khai Voice Input logic trong `app.js`
     - Viết `startVoiceInput()` — gọi `voiceAdapter.startVoiceInput()`, cập nhật UI nút (thêm `.voice-listening`), điền interim results vào `#message-input`
     - Viết `stopVoiceInput()` — gọi `voiceAdapter.stopVoiceInput()`, xóa `.voice-listening`
     - Trong `onFinal` callback: điền text vào input, gọi `sendMessage()` tự động
@@ -602,15 +602,15 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
     - IF `sttSupported = false`: ẩn `#voice-input-button`
     - _Yêu cầu: 39.3, 39.5, 39.6, 39.7, 39.8, 39.9_
 
-- [ ] 30. Triển khai Voice Output (TTS) trong `app.js`
-  - [ ] 30.1 Thêm UI Voice Output vào Settings Panel
+- [x] 30. Triển khai Voice Output (TTS) trong `app.js`
+  - [x] 30.1 Thêm UI Voice Output vào Settings Panel
     - Thêm `#voice-output-toggle` (checkbox) vào Settings Panel
     - Thêm `#voice-input-toggle` (checkbox) vào Settings Panel
     - Thêm `#tts-voice-select` (dropdown) vào Settings Panel
     - IF `ttsSupported = false`: ẩn toàn bộ TTS controls
     - _Yêu cầu: 40.5, 40.10, 40.11, 40.12_
 
-  - [ ] 30.2 Triển khai TTS logic trong `app.js`
+  - [x] 30.2 Triển khai TTS logic trong `app.js`
     - Viết `speakText(text, lang)` — gọi `voiceAdapter.speakText()` với voice từ `_selectedVoiceName`
     - Viết `stopSpeaking()` — gọi `voiceAdapter.stopSpeaking()`
     - Viết `updateVoiceSelector(lang)` — populate `#tts-voice-select` với `getVoicesForLang(lang)`, chọn `getDefaultVoice(lang)` mặc định
@@ -619,14 +619,14 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
     - Cập nhật `appendMessage()` và `finalizeStreamingMessage()` — gọi `onBotReplyReady(text)` sau khi hiển thị
     - _Yêu cầu: 40.2, 40.6, 40.7, 40.8, 40.9_
 
-- [ ] 31. Triển khai Interaction Mode (4 chế độ tương tác)
-  - [ ] 31.1 Thêm UI Interaction Mode vào Settings Panel
+- [x] 31. Triển khai Interaction Mode (4 chế độ tương tác)
+  - [x] 31.1 Thêm UI Interaction Mode vào Settings Panel
     - Thêm `#interaction-mode-select` (select dropdown hoặc radio group) với 4 options: `text-text`, `text-voice`, `voice-text`, `voice-voice`
     - Thêm `#interaction-mode-badge` (indicator nhỏ trong header) hiển thị badge chế độ hiện tại
     - Vô hiệu hóa các option cần API không được hỗ trợ
     - _Yêu cầu: 41.2, 41.8, 41.10_
 
-  - [ ] 31.2 Triển khai Interaction Mode logic trong `app.js`
+  - [x] 31.2 Triển khai Interaction Mode logic trong `app.js`
     - Khai báo `_interactionMode = 'text-text'` và `_selectedVoiceName = null`
     - Viết `setInteractionMode(mode)` — cập nhật `_interactionMode`, toggle hiển thị `#voice-input-button`, bật/tắt TTS auto-speak, cập nhật badge
     - Viết `getInteractionMode()`, `isVoiceInputEnabled()`, `isVoiceOutputEnabled()`
@@ -635,20 +635,104 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
     - Xử lý Voice → Voice feedback loop: trong `startVoiceInput()`, gọi `stopSpeaking()` trước
     - _Yêu cầu: 41.1–41.10_
 
-- [ ] 32. Cập nhật `index.html` và `style.css` cho Voice + Interaction Mode
-  - [ ] 32.1 Cập nhật `index.html`
+- [x] 32. Cập nhật `index.html` và `style.css` cho Voice + Interaction Mode
+  - [x] 32.1 Cập nhật `index.html`
     - Thêm thẻ `<script>` tải `adapters/voice-adapter.js` trước `app.js`
     - Thêm `#voice-input-button`, `#interaction-mode-select`, `#interaction-mode-badge`, `#voice-output-toggle`, `#voice-input-toggle`, `#tts-voice-select` vào đúng vị trí
     - _Yêu cầu: 39.1, 40.5, 41.2, 41.10_
 
-  - [ ] 32.2 Cập nhật `style.css`
+  - [x] 32.2 Cập nhật `style.css`
     - Thêm `.voice-listening` — animation pulse cho nút microphone khi đang nghe
     - Thêm `#voice-input-button` — styling nút microphone
     - Thêm `#interaction-mode-badge` — badge nhỏ hiển thị chế độ hiện tại
     - Thêm `#tts-voice-select` — styling dropdown chọn voice
     - _Yêu cầu: 39.3, 41.10_
 
-- [ ] 33. Checkpoint — Đảm bảo tất cả test pass
+- [x] 34. Triển khai Chat History Retention Policy
+  - [x] 34.1 Cập nhật `data/chat-history-db.js` — thêm `applyRetentionPolicy(mode, value)`
+    - Viết `applyRetentionPolicy(mode, value)` — mode="count": xóa messages cũ nhất cho đến khi còn ≤ value; mode="days": xóa messages có timestamp < Date.now() - value*86400000
+    - Cập nhật `saveChatMessage()` — gọi `applyRetentionPolicy()` sau khi lưu thành công, đọc config từ localStorage
+    - Viết `getRetentionConfig()` — đọc config từ localStorage, trả về `{mode, value}` với default `{mode:"count", value:50}`
+    - Viết `setRetentionConfig(mode, value)` — lưu config vào localStorage và gọi `applyRetentionPolicy()` ngay
+    - Cập nhật stub functions cho Node/test environment
+    - _Yêu cầu: 42.5, 42.6, 42.7, 42.8, 42.9_
+
+  - [x] 34.2 Thêm UI Retention Settings vào Settings Panel trong `index.html`
+    - Thêm `#retention-mode-select` (select với 2 options: "count" và "days")
+    - Thêm `#retention-max-count` (number input, mặc định 50, hiển thị khi mode="count")
+    - Thêm `#retention-max-days` (number input, mặc định 30, hiển thị khi mode="days")
+    - _Yêu cầu: 42.2, 42.3, 42.4_
+
+  - [x] 34.3 Triển khai Retention Settings trong `app.js`
+    - Gắn event listener: `#retention-mode-select` change → `setRetentionConfig(mode, currentValue)`, toggle hiển thị input tương ứng
+    - Gắn event listener: `#retention-max-count` change → `setRetentionConfig("count", value)`
+    - Gắn event listener: `#retention-max-days` change → `setRetentionConfig("days", value)`
+    - Trong `initializeApp()`: đọc config từ localStorage và populate UI
+    - _Yêu cầu: 42.1, 42.9, 42.10_
+
+  - [ ]* 34.4 Viết property test cho applyRetentionPolicy
+    - **Property 41: applyRetentionPolicy count mode**
+    - **Property 42: applyRetentionPolicy days mode**
+    - **Validates: Yêu cầu 42.5, 42.6, 42.7**
+
+- [x] 35. Triển khai Object Macros Panel — Enable/Disable Adapter
+  - [x] 35.1 Cập nhật `updateMacrosList(lang)` trong `app.js` — đọc động từ ADAPTER_REGISTRY
+    - Refactor `updateMacrosList()` để render từ `ADAPTER_REGISTRY` (biến toàn cục từ data-loader.js) thay vì hard-code
+    - Render toggle (checkbox) bên cạnh mỗi adapter, phản ánh `active` state
+    - Ẩn toggle cho `voice-adapter` (ngoại lệ bắt buộc)
+    - Áp dụng CSS class `.macro-item.disabled` cho adapter có `active: false`
+    - _Yêu cầu: 43.1, 43.2, 43.3, 43.6, 43.7_
+
+  - [x] 35.2 Triển khai `setAdapterActive(adapterKey, isActive)` trong `app.js`
+    - Viết `setAdapterActive(adapterKey, isActive)` — cập nhật `ADAPTER_REGISTRY[adapterKey].active`, lưu vào localStorage
+    - Viết `getAdapterStates()` — đọc từ localStorage (key: `hikari_adapter_states`), trả về object `{[key]: boolean}`
+    - Viết `saveAdapterStates()` — lưu `ADAPTER_REGISTRY` active states vào localStorage
+    - Gắn event listener: toggle change → `setAdapterActive(key, checked)`
+    - Trong `initializeApp()`: đọc adapter states từ localStorage và apply vào `ADAPTER_REGISTRY`
+    - _Yêu cầu: 43.4, 43.8, 43.10_
+
+  - [x] 35.3 Cập nhật `initBot(lang)` — chỉ đăng ký adapter active
+    - Trong `registerAdapters(bot, lang)`: kiểm tra `ADAPTER_REGISTRY[key].active` trước khi gọi `bot.setSubroutine()`
+    - Bỏ qua adapter có `active: false`
+    - _Yêu cầu: 43.9_
+
+  - [x] 35.4 Cập nhật `logicAdapterDispatcher` — bỏ qua adapter disabled
+    - Trong dispatcher, trước khi gọi mỗi adapter con, kiểm tra `ADAPTER_REGISTRY[adapterKey]?.active !== false`
+    - Nếu adapter disabled, bỏ qua và tiếp tục với adapter tiếp theo
+    - _Yêu cầu: 43.5_
+
+  - [x] 35.5 Cập nhật `style.css` — thêm style cho adapter disabled
+    - Thêm `.macro-item.disabled` với `opacity: 0.5` và `pointer-events: none` cho nội dung (không phải toggle)
+    - _Yêu cầu: 43.7_
+
+- [x] 36. Triển khai Adapter Prefix Command
+  - [x] 36.1 Triển khai `parseAdapterPrefixCommand(input)` trong `app.js`
+    - Viết `parseAdapterPrefixCommand(input)` — dùng regex `/^\/([a-z_]+)\s+(.+)$/` để parse input
+    - Kiểm tra key có trong `ADAPTER_REGISTRY` với `active: true` và không phải `voice-adapter`
+    - Trả về `{adapterKey, content}` nếu hợp lệ, `null` nếu không
+    - _Yêu cầu: 44.1, 44.4, 44.6, 44.9_
+
+  - [x] 36.2 Triển khai visual feedback badge trong `app.js` và `index.html`
+    - Thêm element `#adapter-prefix-badge` (ẩn mặc định) vào `index.html` phía trên `#message-input`
+    - Viết `showAdapterPrefixBadge(adapterKey)` — hiển thị badge với tên adapter (từ ADAPTER_DISPLAY_NAMES) và icon 🔧
+    - Viết `hideAdapterPrefixBadge()` — ẩn badge
+    - Gắn event listener: `#message-input` input event → gọi `parseAdapterPrefixCommand()` → show/hide badge theo kết quả
+    - Thêm CSS `.adapter-prefix-badge` vào `style.css`
+    - _Yêu cầu: 44.2, 44.7, 44.8_
+
+  - [x] 36.3 Tích hợp Adapter Prefix Command vào `sendMessage()`
+    - Trong `sendMessage()`, trước khi xử lý web search và RiveScript: gọi `parseAdapterPrefixCommand(input)`
+    - Nếu kết quả không null: gọi trực tiếp adapter tương ứng với `content`, bỏ qua toàn bộ fallback chain
+    - Nếu không có content (chỉ có prefix): hiển thị thông báo yêu cầu nhập nội dung
+    - Cập nhật adapter path breadcrumb: thêm "📌" prefix vào tên adapter khi dùng prefix command
+    - Ẩn badge sau khi gửi
+    - _Yêu cầu: 44.3, 44.5, 44.10_
+
+  - [ ]* 36.4 Viết property test cho parseAdapterPrefixCommand
+    - **Property 43: parseAdapterPrefixCommand nhận diện chính xác**
+    - **Validates: Yêu cầu 44.1, 44.4, 44.9**
+
+- [x] 33. Checkpoint — Đảm bảo tất cả test pass
   - Đảm bảo tất cả test pass sau khi tích hợp Voice + Interaction Mode.
 
 ## Ghi chú

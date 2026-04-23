@@ -49,6 +49,9 @@ Phiên bản hiện tại bổ sung thêm: LLM Adapter chạy mô hình ngôn ng
 | Help Dialog | Modal overlay với nội dung từ JSON | Tách nội dung khỏi code, hỗ trợ đa ngôn ngữ dễ dàng |
 | Favicon | Inline SVG trong `<link rel="icon">` | Tránh lỗi 404, không cần tệp favicon riêng |
 | LLM Adapter | Transformers.js (`@huggingface/transformers`) qua CDN, model Qwen3.5-0.8B-ONNX-OPT, device webgpu | Chạy LLM hoàn toàn trên trình duyệt, không cần backend; WebGPU cho hiệu năng tốt nhất |
+| Retention Policy | 2 cơ chế: `"count"` (FIFO, giới hạn N hội thoại) và `"days"` (giới hạn M ngày); config lưu localStorage | Cho phép người dùng kiểm soát dung lượng IndexedDB; FIFO đơn giản và dễ hiểu |
+| Adapter Enable/Disable | Toggle per-adapter qua checkbox trong Macros Panel; trạng thái lưu localStorage; đọc động từ `adapter-registry.json` | Không hard-code danh sách adapter; người dùng tùy chỉnh được bộ adapter đang hoạt động |
+| Adapter Prefix Command | Detect `/[key]` prefix trong `sendMessage()`, gọi adapter trực tiếp | Đơn giản, không cần UI phức tạp; tương tự slash commands trong Discord/Slack |
 | LLM Model Loading | Lazy load — chỉ load khi cần lần đầu, singleton state | Tránh tải model không cần thiết; model lớn (~500MB) chỉ tải 1 lần |
 | LLM Thinking Mode | Prefix `<think>\n` trong prompt khi bật | Kích hoạt chain-of-thought của Qwen3.5; tắt mặc định để tiết kiệm token |
 | LLM Streaming | `TextStreamer` với `callback_function` tích lũy token | Hiển thị phản hồi realtime, cải thiện UX khi LLM generate chậm |
@@ -327,7 +330,7 @@ Biến toàn cục được populate: `SPECIFIC_RESPONSES`, `QA_DATASET`, `ADAPT
 | `updateRulesList(lang)` | Cập nhật danh sách triggers từ `bot._topics.random`, với deduplication và lọc wildcard | `lang: string` | `void` |
 | `formatTrigger(trigger)` | Chuyển trigger RiveScript thành dạng dễ đọc | `trigger: string` | `string` |
 | `toggleMacrosPanel()` | Bật/tắt hiển thị panel danh sách Object Macros | — | `void` |
-| `updateMacrosList(lang)` | Cập nhật danh sách Object Macros cho ngôn ngữ chỉ định | `lang: string` | `void` |
+| `updateMacrosList(lang)` | Cập nhật danh sách Object Macros cho ngôn ngữ chỉ định, đọc động từ ADAPTER_REGISTRY, render toggle per-adapter | `lang: string` | `void` |
 | `renderHelpContent()` | Render nội dung help dialog theo ngôn ngữ hiện tại từ HELP_CONTENT | — | `void` |
 | `openHelpDialog()` | Mở help dialog (render content + remove hidden class) | — | `void` |
 | `closeHelpDialog()` | Đóng help dialog (add hidden class) | — | `void` |
@@ -393,6 +396,15 @@ Biến toàn cục được populate: `SPECIFIC_RESPONSES`, `QA_DATASET`, `ADAPT
 | `closeHistoryDialog()` | Đóng History Dialog | — | `void` |
 | `clearAllHistory()` | Xóa toàn bộ lịch sử: IndexedDB + session | — | `Promise<void>` |
 | `getFinalFallbackMessage()` | Tạo thông báo fallback cuối cùng đa ngôn ngữ kèm thông tin lỗi LLM | — | `string` |
+| `applyRetentionPolicy(mode, value)` | Áp dụng chính sách giới hạn lưu trữ: mode="count" xóa messages cũ nhất cho đến khi còn ≤ value; mode="days" xóa messages có timestamp < Date.now() - value*86400000 | `mode: "count"\|"days"`, `value: number` | `Promise<void>` |
+| `getRetentionConfig()` | Đọc config retention từ localStorage, trả về default nếu chưa có | — | `{mode: string, value: number}` |
+| `setRetentionConfig(mode, value)` | Lưu config retention vào localStorage và gọi applyRetentionPolicy() ngay | `mode: string`, `value: number` | `Promise<void>` |
+| `setAdapterActive(adapterKey, isActive)` | Cập nhật ADAPTER_REGISTRY[adapterKey].active và lưu trạng thái vào localStorage | `adapterKey: string`, `isActive: boolean` | `void` |
+| `getAdapterStates()` | Đọc trạng thái adapter từ localStorage (key: hikari_adapter_states) | — | `{[key: string]: boolean}` |
+| `saveAdapterStates()` | Lưu active states của tất cả adapter trong ADAPTER_REGISTRY vào localStorage | — | `void` |
+| `parseAdapterPrefixCommand(input)` | Parse input để detect `/[key] content` pattern, kiểm tra key trong ADAPTER_REGISTRY với active:true và không phải voice-adapter | `input: string` | `{adapterKey: string, content: string} \| null` |
+| `showAdapterPrefixBadge(adapterKey)` | Hiển thị badge/chip phía trên Message_Input với tên adapter đã chọn | `adapterKey: string` | `void` |
+| `hideAdapterPrefixBadge()` | Ẩn badge/chip khi prefix không còn hợp lệ | — | `void` |
 
 #### Brain Data
 
@@ -463,6 +475,8 @@ Các thành phần CSS chính:
 | `.llm-loading-status` | Hiển thị trạng thái loading model LLM |
 | `.disabled` | Trạng thái vô hiệu hóa cho nút gửi và input |
 | `.message-image` | Ảnh đính kèm trong tin nhắn user (max-width, border-radius) |
+| `.macro-item.disabled` | Adapter bị tắt trong Macros Panel — opacity thấp (0.5), pointer-events: none cho nội dung (không phải toggle) |
+| `.adapter-prefix-badge` | Badge/chip hiển thị phía trên input khi prefix command hợp lệ được nhận diện, màu nền phân biệt, icon 🔧 |
 
 ## Mô hình Dữ liệu
 
@@ -525,6 +539,41 @@ Mỗi adapter trong `ADAPTER_REGISTRY` có cấu trúc:
     callSyntax: string,                                   // Cú pháp gọi từ trigger
     active: boolean                                       // Trạng thái hoạt động
 }
+```
+
+### Retention Config (localStorage)
+
+Config giới hạn lưu trữ lịch sử chat, lưu tại key `hikari_retention_config`:
+
+```javascript
+{
+    mode: "count" | "days",  // Chế độ giới hạn
+    value: number            // N (số hội thoại) hoặc M (số ngày)
+}
+// Mặc định: { mode: "count", value: 50 }
+```
+
+### Adapter States (localStorage)
+
+Trạng thái enable/disable của từng adapter, lưu tại key `hikari_adapter_states`:
+
+```javascript
+{
+    [adapterKey: string]: boolean  // true = enabled, false = disabled
+}
+// Ví dụ: { "best_match": true, "web_search": false, "llm_adapter": true }
+// voice-adapter không có trong object này (luôn enabled)
+```
+
+### Adapter Prefix Command
+
+Format lệnh prefix để chỉ định adapter trực tiếp:
+
+```javascript
+// Adapter Prefix Command format
+// Input: "/best_match xin chào"
+// Parsed: { adapterKey: "best_match", content: "xin chào" }
+// Regex: /^\/([a-z_]+)\s+(.+)$/
 ```
 
 ### Q&A Dataset (Best Match Adapter)
@@ -1064,6 +1113,24 @@ function updateVoiceSelector(lang)   // Cập nhật #tts-voice-select theo ngô
 
 **Validates: Requirements 36.3, 36.4**
 
+### Property 41: applyRetentionPolicy count mode
+
+*For any* số nguyên dương `N` và *for any* tập hợp messages trong IndexedDB, sau khi gọi `applyRetentionPolicy("count", N)`, số lượng messages trong DB phải ≤ N. Các messages được giữ lại phải là N messages mới nhất (theo timestamp).
+
+**Validates: Requirements 42.5, 42.6**
+
+### Property 42: applyRetentionPolicy days mode
+
+*For any* số nguyên không âm `M` và *for any* tập hợp messages trong IndexedDB, sau khi gọi `applyRetentionPolicy("days", M)`, không có message nào trong DB có timestamp < Date.now() - M * 86400000.
+
+**Validates: Requirements 42.5, 42.7**
+
+### Property 43: parseAdapterPrefixCommand nhận diện chính xác
+
+*For any* chuỗi bắt đầu bằng `/[valid_key] [content]` với key là adapter active (không phải voice-adapter), `parseAdapterPrefixCommand()` phải trả về `{adapterKey, content}` không null. *For any* chuỗi không bắt đầu bằng `/` hoặc key không hợp lệ/không active/là voice-adapter, phải trả về `null`.
+
+**Validates: Requirements 44.1, 44.4, 44.9**
+
 ## Xử lý Lỗi
 
 ### Lỗi tải CDN
@@ -1234,6 +1301,20 @@ Tập trung vào các trường hợp cụ thể và edge cases:
 | IndexedDB clear | clearAllChatMessages() → countChatMessages() = 0 | 35.5 |
 | Final fallback message | getFinalFallbackMessage() trả về chuỗi không rỗng cho vi/en/ja | 36.3, 36.4 |
 | appendMessage with image | appendMessage('text', 'user', ..., ..., ..., dataURL) → có .message-image | 37.1, 37.2 |
+| Retention count | applyRetentionPolicy("count", 5) với 10 messages → countChatMessages() ≤ 5 | 42.5, 42.6 |
+| Retention days | applyRetentionPolicy("days", 0) → xóa tất cả messages cũ hơn 0 ngày | 42.5, 42.7 |
+| Adapter toggle | setAdapterActive("best_match", false) → ADAPTER_REGISTRY.best_match.active = false | 43.4 |
+| Adapter disabled skip | logicAdapterDispatcher với best_match disabled → không gọi best_match | 43.5 |
+| Adapter states persist | setAdapterActive() → localStorage có hikari_adapter_states | 43.8 |
+| Macros panel dynamic | updateMacrosList() render từ ADAPTER_REGISTRY (không hard-code) | 43.1, 43.2 |
+| Adapter prefix valid | parseAdapterPrefixCommand("/best_match hello") → {adapterKey:"best_match", content:"hello"} | 44.1, 44.9 |
+| Adapter prefix invalid key | parseAdapterPrefixCommand("/unknown hello") → null | 44.4 |
+| Adapter prefix disabled | parseAdapterPrefixCommand("/web_search test") với web_search disabled → null | 44.4 |
+| Adapter prefix no content | parseAdapterPrefixCommand("/best_match") → null (no content) | 44.5 |
+| Adapter prefix badge show | showAdapterPrefixBadge("best_match") → .adapter-prefix-badge hiển thị | 44.2, 44.7 |
+| Adapter prefix badge hide | hideAdapterPrefixBadge() → .adapter-prefix-badge ẩn | 44.8 |
+| Adapter prefix voice excluded | parseAdapterPrefixCommand("/voice-adapter test") → null | 44.6 |
+| Adapter prefix breadcrumb | Khi dùng prefix command, breadcrumb hiển thị "📌 [name]" | 44.10 |
 
 #### Property-Based Tests
 
@@ -1281,6 +1362,9 @@ Mỗi property test tham chiếu đến thuộc tính đúng đắn tương ứn
 | Property 38 | `Feature: hikari-chatbot, Property 38: attachmentToDataURL format hợp lệ` | `fc.constantFrom('image/png','image/jpeg','image/gif')` × `fc.uint8Array({minLength:1})` | Data URL bắt đầu bằng `data:<fileType>;base64,` |
 | Property 39 | `Feature: hikari-chatbot, Property 39: getVoicesForLang chỉ trả về voices đúng ngôn ngữ` | `fc.constantFrom('vi','en','ja')` | Mọi voice trong kết quả có `lang` prefix khớp với SPEECH_LOCALE_MAP[lang] |
 | Property 40 | `Feature: hikari-chatbot, Property 40: Interaction mode hợp lệ` | `fc.constantFrom('text-text','text-voice','voice-text','voice-voice')` | `isVoiceInputEnabled()` = mode.startsWith('voice'); `isVoiceOutputEnabled()` = mode.endsWith('voice') |
+| Property 41 | `Feature: hikari-chatbot, Property 41: applyRetentionPolicy count mode` | `fc.tuple(fc.integer({min:1, max:100}), fc.array(fc.string(), {minLength:1, maxLength:200}))` | Sau khi apply với mode="count" và value=N, `countChatMessages()` ≤ N; messages giữ lại là N mới nhất |
+| Property 42 | `Feature: hikari-chatbot, Property 42: applyRetentionPolicy days mode` | `fc.tuple(fc.integer({min:0, max:365}), fc.array(fc.record({content: fc.string(), timestamp: fc.integer()}), {minLength:1}))` | Sau khi apply với mode="days" và value=M, không có message nào có timestamp < Date.now() - M*86400000 |
+| Property 43 | `Feature: hikari-chatbot, Property 43: parseAdapterPrefixCommand nhận diện chính xác` | `fc.oneof(fc.constantFrom(...activeAdapterKeys).chain(k => fc.string().filter(s=>s.trim().length>0).map(s => '/'+k+' '+s)), fc.string())` | Valid prefix → {adapterKey, content}; invalid → null |
 
 ### Cấu hình Property Tests
 

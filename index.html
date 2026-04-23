@@ -12,6 +12,7 @@
         <header class="chat-header">
             <h1>Hikari</h1>
             <div class="header-controls">
+                <span id="interaction-mode-badge" class="interaction-mode-badge" title="Click để đổi chế độ tương tác">📝→📝</span>
                 <label class="thinking-toggle" title="Enable/Disable LLM Thinking">
                     <input type="checkbox" id="thinking-toggle" onchange="if(typeof setLLMThinkingEnabled==='function')setLLMThinkingEnabled(this.checked)">
                     <span class="thinking-toggle-label">🧠</span>
@@ -68,12 +69,63 @@
                     <button id="view-history-button" class="setting-btn">📜 View History</button>
                     <button id="clear-history-button" class="setting-btn setting-btn-danger">🗑 Clear History</button>
                 </div>
+                <div class="setting-item">
+                    <label class="setting-label">Giới hạn lưu trữ:</label>
+                    <select id="retention-mode-select" class="setting-select">
+                        <option value="count">Giới hạn số lượng</option>
+                        <option value="days">Giới hạn thời gian</option>
+                    </select>
+                </div>
+                <div id="retention-count-section" class="setting-item">
+                    <label>
+                        Tối đa:
+                        <input type="number" id="retention-max-count" value="50" min="1" max="10000" class="setting-number">
+                    </label>
+                    <span class="setting-hint">hội thoại</span>
+                </div>
+                <div id="retention-days-section" class="setting-item hidden">
+                    <label>
+                        Tối đa:
+                        <input type="number" id="retention-max-days" value="30" min="1" max="3650" class="setting-number">
+                    </label>
+                    <span class="setting-hint">ngày</span>
+                </div>
+                <hr class="setting-divider">
+                <div class="setting-item">
+                    <label class="setting-label">Chế độ tương tác:</label>
+                    <select id="interaction-mode-select" class="setting-select">
+                        <option value="text-text">📝→📝 Text → Text</option>
+                        <option value="text-voice">📝→🔊 Text → Voice</option>
+                        <option value="voice-text">🎤→📝 Voice → Text</option>
+                        <option value="voice-voice">🎤→🔊 Voice → Voice</option>
+                    </select>
+                </div>
+                <div id="tts-settings-section">
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="voice-input-toggle">
+                            Voice Input (Speech to Text)
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="voice-output-toggle">
+                            Voice Output (Text to Speech)
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label class="setting-label">Giọng đọc:</label>
+                        <select id="tts-voice-select" class="setting-select"></select>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="message-display" class="message-display"></div>
         <div class="input-area">
             <button id="attach-button" title="Đính kèm ảnh" aria-label="Đính kèm ảnh">📎</button>
             <input type="file" id="file-input" accept="image/*" class="hidden">
+            <button id="voice-input-button" class="hidden" title="Nhập bằng giọng nói" aria-label="Nhập bằng giọng nói">🎤</button>
+            <div id="adapter-prefix-badge" class="adapter-prefix-badge hidden" aria-live="polite"></div>
             <input type="text" id="message-input" placeholder="Nhập tin nhắn...">
             <button id="send-button">Gửi</button>
         </div>
@@ -127,6 +179,7 @@
     <script src="adapters/logic-dispatcher.js"></script>
     <script src="adapters/web-search.js"></script>
     <script src="adapters/llm-adapter.js"></script>
+    <script src="adapters/voice-adapter.js"></script>
     <script src="adapters/adapter-registry.js"></script>
     <script src="app.js"></script>
 </body>

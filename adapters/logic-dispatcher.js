@@ -24,20 +24,27 @@ function isValidAdapterResult(result) {
 
 function logicAdapterDispatcher(rs, args) {
     _adapterPath.push('logic_adapter');
-    var adapters = [
-        specificResponseAdapter,
-        timeAdapter,
-        mathematicalEvaluationAdapter,
-        unitConversionAdapter,
-        bestMatchAdapter
+    var adapterMap = [
+        { key: 'specific_response', fn: specificResponseAdapter },
+        { key: 'time_adapter', fn: timeAdapter },
+        { key: 'mathematical_evaluation', fn: mathematicalEvaluationAdapter },
+        { key: 'unit_conversion', fn: unitConversionAdapter },
+        { key: 'best_match', fn: bestMatchAdapter }
     ];
 
     var pathLenBefore = _adapterPath.length;
 
-    for (var i = 0; i < adapters.length; i++) {
+    for (var i = 0; i < adapterMap.length; i++) {
+        var entry = adapterMap[i];
+        // Bỏ qua adapter bị disabled
+        if (typeof ADAPTER_REGISTRY !== 'undefined' &&
+            ADAPTER_REGISTRY[entry.key] &&
+            ADAPTER_REGISTRY[entry.key].active === false) {
+            continue;
+        }
         try {
             _adapterPath.length = pathLenBefore;
-            var result = adapters[i](rs, args);
+            var result = entry.fn(rs, args);
             // bestMatchAdapter trả {answer, score}, các adapter khác trả string
             if (result && typeof result === 'object' && result.answer) {
                 if (isValidAdapterResult(result.answer)) return result.answer;

@@ -8,7 +8,7 @@ let bot = null;                // Instance RiveScript hiện tại
 let currentLang = 'vi';        // Ngôn ngữ hiện tại
 const USERNAME = 'local-user'; // Username cố định cho RiveScript
 var _adapterPath = [];         // Tracking adapter chain cho mỗi lượt phản hồi
-var _attachedImage = null;     // Ảnh đính kèm hiện tại: { dataURL: string, name: string } | null
+var _attachedImage = null;     // Ảnh đính kèm hiện tại: { dataURL: string, name: string, file: File } | null
 
 // === Chat History ===
 var _chatHistory = [];           // Mảng {role: 'user'|'assistant', content: string}
@@ -487,6 +487,12 @@ function finalizeStreamingMessage(els, finalText, confidence, adapterPath, respo
     }
 
     scrollToBottom();
+
+    // TTS: đọc phản hồi sau khi streaming hoàn tất
+    var finalReply = els.thinkDiv
+        ? (els.textEl ? els.textEl.textContent : '')
+        : (els.textEl ? els.textEl.textContent : '');
+    if (finalReply) onBotReplyReady(finalReply);
 }
 
 /**
@@ -514,7 +520,7 @@ function handleFileAttachment(file) {
 
     var reader = new FileReader();
     reader.onload = function (e) {
-        _attachedImage = { dataURL: e.target.result, name: file.name };
+        _attachedImage = { dataURL: e.target.result, name: file.name, file: file };
 
         var thumb = document.getElementById('attachment-thumb');
         var nameEl = document.getElementById('attachment-name');
@@ -564,8 +570,9 @@ function consumeAttachment() {
  * Lưu một message vào chat history.
  * @param {string} role - 'user' hoặc 'assistant'
  * @param {string} content - Nội dung message
+ * @param {File} [file] - File đính kèm (tùy chọn, chỉ dùng cho role='user')
  */
-function addChatHistory(role, content) {
+function addChatHistory(role, content, file) {
     if (!content || !content.trim()) return;
     // Strip thinking tags khi lưu assistant response
     var clean = content;
@@ -579,9 +586,9 @@ function addChatHistory(role, content) {
     if (!clean.trim()) return;
     _chatHistory.push({ role: role, content: clean.trim() });
 
-    // Lưu vào IndexedDB (async, không block)
+    // Lưu vào IndexedDB (async, không block), kèm file nếu có
     if (typeof saveChatMessage === 'function') {
-        saveChatMessage(role, clean.trim(), currentLang).catch(function (err) {
+        saveChatMessage(role, clean.trim(), currentLang, file || null).catch(function (err) {
             console.error('Lỗi lưu history vào IndexedDB:', err);
         });
     }
@@ -616,6 +623,7 @@ function setChatHistoryEnabled(enabled) {
     if (!_chatHistoryEnabled) {
         _chatHistory = [];
     }
+    try { localStorage.setItem('hikari_chat_history_enabled', _chatHistoryEnabled ? '1' : '0'); } catch (e) {}
 }
 
 /**
@@ -631,6 +639,7 @@ function isChatHistoryEnabled() {
  */
 function setChatHistoryMaxTurns(maxTurns) {
     _chatHistoryMaxTurns = Math.max(0, parseInt(maxTurns, 10) || 0);
+    try { localStorage.setItem('hikari_chat_history_max_turns', String(_chatHistoryMaxTurns)); } catch (e) {}
 }
 
 /**
@@ -648,13 +657,14 @@ function getChatHistoryMaxTurns() {
  * @param {string[]} [adapterPath] - Danh sách adapter đã xử lý (chỉ dùng cho bot)
  * @param {number} [responseTime] - Thời gian xử lý (ms, chỉ dùng cho bot)
  * @param {string} [imageDataURL] - Data URL ảnh đính kèm (chỉ dùng cho user)
+ * @param {boolean} [skipHistory] - Nếu true, không lưu vào chat history (dùng khi load từ history)
  */
-function appendMessage(text, sender, confidence, adapterPath, responseTime, imageDataURL) {
+function appendMessage(text, sender, confidence, adapterPath, responseTime, imageDataURL, skipHistory) {
     const display = document.getElementById('message-display');
     if (!display) return;
 
-    // Lưu bot response vào history (trừ khi đang skip)
-    if (sender === 'bot' && text && !_skipHistoryOnce) {
+    // Lưu bot response vào history (trừ khi đang skip hoặc skipHistory = true)
+    if (sender === 'bot' && text && !_skipHistoryOnce && !skipHistory) {
         addChatHistory('assistant', text);
     }
     _skipHistoryOnce = false;
@@ -707,6 +717,11 @@ function appendMessage(text, sender, confidence, adapterPath, responseTime, imag
 
     display.appendChild(messageDiv);
     scrollToBottom();
+
+    // TTS: đọc phản hồi bot nếu voice output đang bật
+    if (sender === 'bot' && text) {
+        onBotReplyReady(text);
+    }
 }
 
 /**
@@ -886,6 +901,9 @@ async function changeLanguage(lang) {
     if (typeof updateMacrosList === 'function') {
         updateMacrosList(lang);
     }
+
+    // Cập nhật voice selector theo ngôn ngữ mới
+    updateVoiceSelector(lang);
 }
 
 // ============================================================
@@ -946,6 +964,49 @@ async function callFallbackAPI(userMessage) {
     } finally {
         clearTimeout(timeoutId);
     }
+}
+
+/**
+ * Parse Adapter Prefix Command: /[key] [content]
+ * Trả về {adapterKey, content} nếu hợp lệ, null nếu không.
+ * Key hợp lệ: có trong ADAPTER_REGISTRY, active:true, không phải voice-adapter.
+ * @param {string} input
+ * @returns {{adapterKey: string, content: string}|null}
+ */
+function parseAdapterPrefixCommand(input) {
+    if (!input || input.charAt(0) !== '/') return null;
+    var match = input.match(/^\/([a-z_]+)\s+(.+)$/);
+    if (!match) return null;
+    var key = match[1];
+    var content = match[2].trim();
+    if (!content) return null;
+    // Kiểm tra key trong ADAPTER_REGISTRY
+    if (typeof ADAPTER_REGISTRY === 'undefined' || !ADAPTER_REGISTRY[key]) return null;
+    // Bỏ qua voice-adapter
+    if (key === 'voice-adapter' || key === 'voice_adapter') return null;
+    // Bỏ qua adapter disabled
+    if (ADAPTER_REGISTRY[key].active === false) return null;
+    return { adapterKey: key, content: content };
+}
+
+/**
+ * Hiển thị badge adapter prefix phía trên input.
+ * @param {string} adapterKey
+ */
+function showAdapterPrefixBadge(adapterKey) {
+    var badge = document.getElementById('adapter-prefix-badge');
+    if (!badge) return;
+    var name = (typeof getAdapterDisplayName === 'function') ? getAdapterDisplayName(adapterKey) : adapterKey;
+    badge.textContent = '🔧 ' + name;
+    badge.classList.remove('hidden');
+}
+
+/**
+ * Ẩn badge adapter prefix.
+ */
+function hideAdapterPrefixBadge() {
+    var badge = document.getElementById('adapter-prefix-badge');
+    if (badge) badge.classList.add('hidden');
 }
 
 /**
@@ -1039,10 +1100,13 @@ async function sendMessage() {
 
     // Lưu user message vào history (nếu có ảnh mà không có text, ghi chú [image])
     var historyText = (text && text.trim()) ? text : (attachment ? '[image: ' + attachment.name + ']' : '');
-    addChatHistory('user', historyText);
+    addChatHistory('user', historyText, attachment ? attachment.file : null);
 
     // Xóa input
     input.value = '';
+
+    // Ẩn badge adapter prefix sau khi gửi
+    hideAdapterPrefixBadge();
 
     // Kiểm tra bot đã khởi tạo chưa
     if (!bot) {
@@ -1057,6 +1121,87 @@ async function sendMessage() {
 
     try {
         var startTime = Date.now();
+
+        // Adapter Prefix Command: /[key] [content] — gọi trực tiếp adapter được chỉ định
+        var prefixCmd = parseAdapterPrefixCommand(text);
+        if (prefixCmd && !attachment) {
+            var adapterKey = prefixCmd.adapterKey;
+            var content = prefixCmd.content;
+
+            // Kiểm tra content không rỗng
+            if (!content || !content.trim()) {
+                var lang = currentLang || 'vi';
+                var emptyMsg = lang === 'en' ? 'Please provide content after the adapter prefix.'
+                    : lang === 'ja' ? 'アダプタープレフィックスの後にコンテンツを入力してください。'
+                    : 'Vui lòng nhập nội dung sau prefix adapter.';
+                showError(emptyMsg);
+                return;
+            }
+
+            // Gọi adapter trực tiếp
+            _adapterPath = [];
+            var adapterResult = null;
+            var adapterError = null;
+
+            try {
+                // Gọi adapter tương ứng với key
+                if (adapterKey === 'best_match' && typeof bestMatchAdapter === 'function') {
+                    var bmRes = bestMatchAdapter(bot, content.split(/\s+/));
+                    adapterResult = (bmRes && bmRes.answer) ? bmRes.answer : null;
+                } else if (adapterKey === 'mathematical_evaluation' && typeof mathematicalEvaluationAdapter === 'function') {
+                    adapterResult = mathematicalEvaluationAdapter(bot, content.split(/\s+/));
+                } else if (adapterKey === 'specific_response' && typeof specificResponseAdapter === 'function') {
+                    adapterResult = specificResponseAdapter(bot, content.split(/\s+/));
+                } else if (adapterKey === 'time_adapter' && typeof timeAdapter === 'function') {
+                    adapterResult = timeAdapter(bot, content.split(/\s+/));
+                } else if (adapterKey === 'unit_conversion' && typeof unitConversionAdapter === 'function') {
+                    adapterResult = unitConversionAdapter(bot, content.split(/\s+/));
+                } else if (adapterKey === 'web_search' && typeof webSearchAdapter === 'function') {
+                    loadingEl = showLoadingIndicator();
+                    adapterResult = await webSearchAdapter(bot, content.split(/\s+/));
+                    hideLoadingIndicator(loadingEl);
+                    loadingEl = null;
+                } else if (adapterKey === 'llm_adapter' && typeof llmAdapter === 'function') {
+                    var streamEl = createStreamingBotMessage();
+                    var streamCb = createStreamingCallback(streamEl);
+                    showLLMCancelButton();
+                    adapterResult = await llmAdapter(bot, content.split(/\s+/), null, streamCb, getChatHistoryForLLM());
+                    hideLLMCancelButton();
+                    var elapsed = Date.now() - startTime;
+                    var llmPath = _adapterPath.length > 0 ? _adapterPath.slice() : ['llm_adapter'];
+                    // Thêm "📌" prefix vào tên adapter đầu tiên trong breadcrumb
+                    if (llmPath.length > 0) llmPath[0] = '📌' + llmPath[0];
+                    if (isValidAdapterResult(adapterResult)) {
+                        finalizeStreamingMessage(streamEl, adapterResult, null, llmPath, elapsed);
+                    } else {
+                        removeStreamingMessage(streamEl);
+                        appendMessage(getFinalFallbackMessage(), 'bot', null, llmPath, elapsed);
+                    }
+                    return;
+                } else if (adapterKey === 'logic_adapter' && typeof logicAdapterDispatcher === 'function') {
+                    adapterResult = logicAdapterDispatcher(bot, content.split(/\s+/));
+                } else {
+                    adapterError = 'Adapter không được hỗ trợ: ' + adapterKey;
+                }
+            } catch (adapterErr) {
+                console.error('Lỗi gọi adapter:', adapterErr);
+                adapterError = 'Lỗi khi gọi adapter: ' + (adapterErr.message || adapterErr);
+            }
+
+            var elapsed = Date.now() - startTime;
+            var adapterPath = _adapterPath.length > 0 ? _adapterPath.slice() : [adapterKey];
+            // Thêm "📌" prefix vào tên adapter đầu tiên trong breadcrumb
+            if (adapterPath.length > 0) adapterPath[0] = '📌' + adapterPath[0];
+
+            if (adapterError) {
+                showError(adapterError);
+            } else if (isValidAdapterResult(adapterResult)) {
+                appendMessage(adapterResult, 'bot', null, adapterPath, elapsed);
+            } else {
+                appendMessage(getFinalFallbackMessage(), 'bot', null, adapterPath, elapsed);
+            }
+            return;
+        }
 
         // Nếu có ảnh đính kèm → gửi thẳng qua LLM Adapter (RiveScript không xử lý ảnh)
         if (attachment) {
@@ -1293,6 +1438,7 @@ async function sendMessage() {
         'logic-dispatcher.js',
         'web-search.js',
         'llm-adapter.js',
+        'voice-adapter.js',
         'adapter-registry.js'
     ];
     for (var i = 0; i < files.length; i++) {
@@ -1307,6 +1453,46 @@ async function sendMessage() {
 // ============================================================
 // Object Macro List Panel — Toggle và cập nhật danh sách macros
 // ============================================================
+
+/**
+ * Lấy trạng thái enable/disable của các adapter từ localStorage.
+ * @returns {{[key: string]: boolean}}
+ */
+function getAdapterStates() {
+    try {
+        var raw = localStorage.getItem('hikari_adapter_states');
+        if (raw) return JSON.parse(raw) || {};
+    } catch (e) { /* ignore */ }
+    return {};
+}
+
+/**
+ * Lưu trạng thái active của tất cả adapter vào localStorage.
+ */
+function saveAdapterStates() {
+    var states = {};
+    var keys = Object.keys(ADAPTER_REGISTRY);
+    for (var i = 0; i < keys.length; i++) {
+        states[keys[i]] = ADAPTER_REGISTRY[keys[i]].active !== false;
+    }
+    try {
+        localStorage.setItem('hikari_adapter_states', JSON.stringify(states));
+    } catch (e) { /* ignore */ }
+}
+
+/**
+ * Cập nhật trạng thái active của một adapter và lưu vào localStorage.
+ * Thay đổi sẽ có hiệu lực ngay lập tức vì wrapper trong registerAdapters() kiểm tra flag mỗi lần gọi.
+ * @param {string} adapterKey
+ * @param {boolean} isActive
+ */
+function setAdapterActive(adapterKey, isActive) {
+    if (!ADAPTER_REGISTRY[adapterKey]) return;
+    // voice-adapter luôn enabled
+    if (adapterKey === 'voice-adapter' || adapterKey === 'voice_adapter') return;
+    ADAPTER_REGISTRY[adapterKey].active = isActive;
+    saveAdapterStates();
+}
 
 /**
  * Toggle hiển thị panel danh sách Object Macros.
@@ -1397,6 +1583,20 @@ async function _loadHistoryPage() {
                     content.className = 'history-content';
                     content.textContent = msg.content;
                     div.appendChild(content);
+                    // Hiển thị thumbnail attachment nếu có
+                    if (msg.role === 'user' && typeof getAttachmentByMessageId === 'function') {
+                        (function (divEl, msgId) {
+                            getAttachmentByMessageId(msgId).then(function (att) {
+                                if (att && typeof attachmentToDataURL === 'function') {
+                                    var thumb = document.createElement('img');
+                                    thumb.className = 'history-attachment-thumb';
+                                    thumb.src = attachmentToDataURL(att);
+                                    thumb.alt = att.fileName || 'attachment';
+                                    divEl.appendChild(thumb);
+                                }
+                            }).catch(function () {});
+                        })(div, msg.id);
+                    }
                     listEl.appendChild(div);
                 }
             }
@@ -1483,7 +1683,22 @@ async function loadRecentHistoryToChat() {
         for (var i = 0; i < messages.length; i++) {
             var msg = messages[i];
             var sender = msg.role === 'user' ? 'user' : 'bot';
-            appendMessage(msg.content, sender);
+            
+            // Load attachment nếu có (chỉ cho user messages)
+            var imageDataURL = null;
+            if (msg.role === 'user' && typeof getAttachmentByMessageId === 'function') {
+                try {
+                    var att = await getAttachmentByMessageId(msg.id);
+                    if (att && typeof attachmentToDataURL === 'function') {
+                        imageDataURL = attachmentToDataURL(att);
+                    }
+                } catch (attErr) {
+                    console.warn('Không thể load attachment cho message', msg.id, attErr);
+                }
+            }
+            
+            // skipHistory = true để tránh lưu lại vào IndexedDB
+            appendMessage(msg.content, sender, null, null, null, imageDataURL, true);
         }
     } catch (err) {
         console.error('Lỗi load history:', err);
@@ -1503,17 +1718,17 @@ function updateMacrosList(lang) {
 
     list.innerHTML = '';
 
-    var activeLabel = lang === 'en' ? 'Active' : lang === 'ja' ? '有効' : 'Hoạt động';
-
     var keys = Object.keys(ADAPTER_REGISTRY);
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var adapter = ADAPTER_REGISTRY[key];
+        var isActive = adapter.active !== false;
+        var isVoice = (key === 'voice-adapter' || key === 'voice_adapter');
 
         var li = document.createElement('li');
-        li.className = 'macro-item';
+        li.className = 'macro-item' + (isActive ? '' : ' disabled');
 
-        // Header row: name + badge
+        // Header row: name + toggle
         var header = document.createElement('div');
         header.className = 'macro-item-header';
 
@@ -1521,16 +1736,34 @@ function updateMacrosList(lang) {
         strong.textContent = adapter.name[lang] || adapter.name['vi'];
         header.appendChild(strong);
 
-        if (adapter.active) {
-            var badge = document.createElement('span');
-            badge.className = 'macro-item-badge';
-            badge.textContent = activeLabel;
-            header.appendChild(badge);
+        // Toggle checkbox (ẩn cho voice-adapter)
+        if (!isVoice) {
+            var toggleLabel = document.createElement('label');
+            toggleLabel.className = 'macro-toggle-label';
+            toggleLabel.title = isActive
+                ? (lang === 'en' ? 'Disable adapter' : lang === 'ja' ? '無効にする' : 'Tắt adapter')
+                : (lang === 'en' ? 'Enable adapter' : lang === 'ja' ? '有効にする' : 'Bật adapter');
+
+            var toggleInput = document.createElement('input');
+            toggleInput.type = 'checkbox';
+            toggleInput.className = 'macro-toggle-input';
+            toggleInput.checked = isActive;
+            toggleInput.dataset.adapterKey = key;
+            (function (adapterKey, liEl) {
+                toggleInput.addEventListener('change', function (e) {
+                    setAdapterActive(adapterKey, e.target.checked);
+                    liEl.className = 'macro-item' + (e.target.checked ? '' : ' disabled');
+                });
+            })(key, li);
+
+            toggleLabel.appendChild(toggleInput);
+            header.appendChild(toggleLabel);
         }
 
         li.appendChild(header);
 
         var p = document.createElement('p');
+        p.className = 'macro-item-desc';
         p.textContent = adapter.description[lang] || adapter.description['vi'];
         li.appendChild(p);
 
@@ -1747,6 +1980,18 @@ async function initializeApp() {
         await loadAllData();
     }
 
+    // Áp dụng adapter states từ localStorage vào ADAPTER_REGISTRY
+    if (typeof getAdapterStates === 'function' && typeof ADAPTER_REGISTRY !== 'undefined') {
+        var savedStates = getAdapterStates();
+        var stateKeys = Object.keys(savedStates);
+        for (var si = 0; si < stateKeys.length; si++) {
+            var sk = stateKeys[si];
+            if (ADAPTER_REGISTRY[sk] && sk !== 'voice-adapter' && sk !== 'voice_adapter') {
+                ADAPTER_REGISTRY[sk].active = savedStates[sk];
+            }
+        }
+    }
+
     // Load preprocessed similarity data (chỉ trong trình duyệt)
     if (typeof loadPreprocessedData === 'function') {
         await loadPreprocessedData();
@@ -1791,6 +2036,17 @@ async function initializeApp() {
                 sendMessage();
             }
         });
+
+        // Input: input event → parseAdapterPrefixCommand → show/hide badge
+        msgInput.addEventListener('input', function(e) {
+            var inputText = e.target.value;
+            var parsed = parseAdapterPrefixCommand(inputText);
+            if (parsed) {
+                showAdapterPrefixBadge(parsed.adapterKey);
+            } else {
+                hideAdapterPrefixBadge();
+            }
+        });
     }
 
     // Nút macros: click → toggleMacrosPanel
@@ -1803,6 +2059,16 @@ async function initializeApp() {
     var rulesBtn = document.getElementById('rules-button');
     if (rulesBtn) {
         rulesBtn.addEventListener('click', toggleRulesPanel);
+    }
+
+    // Interaction Mode Badge: click → cycle modes
+    var modeBadge = document.getElementById('interaction-mode-badge');
+    if (modeBadge) {
+        modeBadge.addEventListener('click', function () {
+            console.log('[Event] Interaction mode badge clicked');
+            cycleInteractionMode();
+        });
+        console.log('[Init] Interaction mode badge click listener attached');
     }
 
     // Nút help: click → openHelpDialog
@@ -1938,6 +2204,213 @@ async function initializeApp() {
             closeHelpDialog();
         }
     });
+
+    // === Voice Adapter: khởi tạo ===
+    var voiceSupport = (typeof initVoiceAdapter === 'function') ? initVoiceAdapter() : { sttSupported: false, ttsSupported: false };
+
+    // Ẩn nút microphone mặc định (chỉ hiện khi mode voice-*)
+    var micBtn = document.getElementById('voice-input-button');
+    if (micBtn) {
+        if (!voiceSupport.sttSupported) {
+            micBtn.classList.add('hidden');
+            micBtn.title = currentLang === 'en' ? 'Speech recognition not supported' : currentLang === 'ja' ? '音声認識非対応' : 'Trình duyệt không hỗ trợ nhận diện giọng nói';
+        } else {
+            micBtn.classList.add('hidden'); // Ẩn cho đến khi mode voice được chọn
+            micBtn.addEventListener('click', function () {
+                if (typeof isVoiceInputActive === 'function' && isVoiceInputActive()) {
+                    stopVoiceInput();
+                } else {
+                    startVoiceInput();
+                }
+            });
+        }
+    }
+
+    // Interaction Mode selector
+    var modeSelect = document.getElementById('interaction-mode-select');
+    if (modeSelect) {
+        console.log('[Init] Interaction mode select found, setting up listener');
+        // Vô hiệu hóa các option cần API không hỗ trợ
+        var opts = modeSelect.querySelectorAll('option');
+        opts.forEach(function (opt) {
+            var val = opt.value;
+            var needsSTT = val.startsWith('voice-');
+            var needsTTS = val.endsWith('-voice');
+            if ((needsSTT && !voiceSupport.sttSupported) || (needsTTS && !voiceSupport.ttsSupported)) {
+                opt.disabled = true;
+                opt.title = 'Trình duyệt không hỗ trợ';
+                console.log('[Init] Disabled option:', val, '(STT:', voiceSupport.sttSupported, 'TTS:', voiceSupport.ttsSupported, ')');
+            }
+        });
+        modeSelect.addEventListener('change', function (e) {
+            console.log('[Event] Interaction mode changed to:', e.target.value);
+            setInteractionMode(e.target.value);
+        });
+        console.log('[Init] Interaction mode listener attached. Current value:', modeSelect.value);
+    } else {
+        console.warn('[Init] interaction-mode-select not found!');
+    }
+
+    // TTS voice selector
+    var voiceSelect = document.getElementById('tts-voice-select');
+    if (voiceSelect) {
+        if (!voiceSupport.ttsSupported) {
+            // Ẩn TTS controls
+            var ttsSection = document.getElementById('tts-settings-section');
+            if (ttsSection) ttsSection.classList.add('hidden');
+        } else {
+            // Populate voices (có thể cần chờ onvoiceschanged)
+            updateVoiceSelector(currentLang);
+            if (window.speechSynthesis) {
+                window.speechSynthesis.onvoiceschanged = function () {
+                    updateVoiceSelector(currentLang);
+                };
+            }
+            voiceSelect.addEventListener('change', function (e) {
+                _selectedVoiceName = e.target.value || null;
+                try { localStorage.setItem('hikari_voice_name', _selectedVoiceName || ''); } catch (ex) {}
+            });
+        }
+    }
+
+    // Voice output toggle
+    var voiceOutToggle = document.getElementById('voice-output-toggle');
+    if (voiceOutToggle) {
+        voiceOutToggle.addEventListener('change', function (e) {
+            var cur = getInteractionMode();
+            if (e.target.checked) {
+                setInteractionMode(cur.startsWith('voice-') ? 'voice-voice' : 'text-voice');
+            } else {
+                setInteractionMode(cur.startsWith('voice-') ? 'voice-text' : 'text-text');
+            }
+        });
+    }
+
+    // Voice input toggle
+    var voiceInToggle = document.getElementById('voice-input-toggle');
+    if (voiceInToggle) {
+        voiceInToggle.addEventListener('change', function (e) {
+            var cur = getInteractionMode();
+            if (e.target.checked) {
+                setInteractionMode(cur.endsWith('-voice') ? 'voice-voice' : 'voice-text');
+            } else {
+                setInteractionMode(cur.endsWith('-voice') ? 'text-voice' : 'text-text');
+            }
+        });
+    }
+
+    // === Load settings từ localStorage ===
+    (function () {
+        try {
+            // Interaction mode
+            var savedMode = localStorage.getItem('hikari_interaction_mode');
+            if (savedMode && ['text-text', 'text-voice', 'voice-text', 'voice-voice'].indexOf(savedMode) !== -1) {
+                // Kiểm tra mode có được hỗ trợ không trước khi áp dụng
+                var needsSTT = savedMode.startsWith('voice-');
+                var needsTTS = savedMode.endsWith('-voice');
+                if ((!needsSTT || voiceSupport.sttSupported) && (!needsTTS || voiceSupport.ttsSupported)) {
+                    setInteractionMode(savedMode);
+                } else {
+                    setInteractionMode('text-text');
+                }
+            } else {
+                setInteractionMode('text-text');
+            }
+
+            // Voice name
+            var savedVoice = localStorage.getItem('hikari_voice_name');
+            if (savedVoice) {
+                _selectedVoiceName = savedVoice;
+                if (voiceSelect) voiceSelect.value = savedVoice;
+            }
+
+            // Chat history enabled
+            var savedHistEnabled = localStorage.getItem('hikari_chat_history_enabled');
+            if (savedHistEnabled !== null) {
+                var histEnabled = savedHistEnabled === '1';
+                _chatHistoryEnabled = histEnabled;
+                if (historyToggle) historyToggle.checked = histEnabled;
+            }
+
+            // Chat history max turns
+            var savedMaxTurns = localStorage.getItem('hikari_chat_history_max_turns');
+            if (savedMaxTurns !== null) {
+                var maxTurns = Math.max(0, parseInt(savedMaxTurns, 10) || 0);
+                _chatHistoryMaxTurns = maxTurns;
+                if (historyMaxTurns) historyMaxTurns.value = maxTurns;
+            }
+
+            // LLM thinking
+            var savedThinking = localStorage.getItem('hikari_llm_thinking');
+            if (savedThinking !== null) {
+                var thinkingOn = savedThinking === '1';
+                if (typeof setLLMThinkingEnabled === 'function') setLLMThinkingEnabled(thinkingOn);
+                if (thinkingToggle) thinkingToggle.checked = thinkingOn;
+            }
+
+            // Voice output toggle UI sync
+            if (voiceOutToggle) voiceOutToggle.checked = isVoiceOutputEnabled();
+            // Voice input toggle UI sync
+            if (voiceInToggle) voiceInToggle.checked = isVoiceInputEnabled();
+
+        } catch (e) {
+            console.warn('[initializeApp] Lỗi load settings từ localStorage:', e);
+            setInteractionMode('text-text');
+        }
+    })();
+
+    // === Retention Policy Settings ===
+    var retentionModeSelect = document.getElementById('retention-mode-select');
+    var retentionCountSection = document.getElementById('retention-count-section');
+    var retentionDaysSection = document.getElementById('retention-days-section');
+    var retentionMaxCount = document.getElementById('retention-max-count');
+    var retentionMaxDays = document.getElementById('retention-max-days');
+
+    // Populate UI từ localStorage
+    if (typeof getRetentionConfig === 'function') {
+        var retCfg = getRetentionConfig();
+        if (retentionModeSelect) retentionModeSelect.value = retCfg.mode;
+        if (retCfg.mode === 'days') {
+            if (retentionCountSection) retentionCountSection.classList.add('hidden');
+            if (retentionDaysSection) retentionDaysSection.classList.remove('hidden');
+            if (retentionMaxDays) retentionMaxDays.value = retCfg.value;
+        } else {
+            if (retentionCountSection) retentionCountSection.classList.remove('hidden');
+            if (retentionDaysSection) retentionDaysSection.classList.add('hidden');
+            if (retentionMaxCount) retentionMaxCount.value = retCfg.value;
+        }
+    }
+
+    if (retentionModeSelect) {
+        retentionModeSelect.addEventListener('change', function (e) {
+            var mode = e.target.value;
+            if (mode === 'days') {
+                if (retentionCountSection) retentionCountSection.classList.add('hidden');
+                if (retentionDaysSection) retentionDaysSection.classList.remove('hidden');
+                var days = retentionMaxDays ? (parseInt(retentionMaxDays.value, 10) || 30) : 30;
+                if (typeof setRetentionConfig === 'function') setRetentionConfig('days', days);
+            } else {
+                if (retentionCountSection) retentionCountSection.classList.remove('hidden');
+                if (retentionDaysSection) retentionDaysSection.classList.add('hidden');
+                var count = retentionMaxCount ? (parseInt(retentionMaxCount.value, 10) || 50) : 50;
+                if (typeof setRetentionConfig === 'function') setRetentionConfig('count', count);
+            }
+        });
+    }
+
+    if (retentionMaxCount) {
+        retentionMaxCount.addEventListener('change', function (e) {
+            var val = parseInt(e.target.value, 10) || 50;
+            if (typeof setRetentionConfig === 'function') setRetentionConfig('count', val);
+        });
+    }
+
+    if (retentionMaxDays) {
+        retentionMaxDays.addEventListener('change', function (e) {
+            var val = parseInt(e.target.value, 10) || 30;
+            if (typeof setRetentionConfig === 'function') setRetentionConfig('days', val);
+        });
+    }
 }
 
 // Tự động khởi tạo khi DOM sẵn sàng (chỉ trong trình duyệt, không chạy trong môi trường test)
@@ -1946,6 +2419,264 @@ if (typeof document !== 'undefined' && typeof module === 'undefined') {
         document.addEventListener('DOMContentLoaded', initializeApp);
     } else {
         initializeApp();
+    }
+}
+
+// ============================================================
+// Voice Input / Output + Interaction Mode
+// ============================================================
+
+/**
+ * Trạng thái Interaction Mode.
+ * 'text-text' | 'text-voice' | 'voice-text' | 'voice-voice'
+ */
+var _interactionMode = 'text-text';
+
+/** Tên voice TTS đã chọn (null = dùng default). */
+var _selectedVoiceName = null;
+
+/**
+ * Lấy chế độ tương tác hiện tại.
+ * @returns {string}
+ */
+function getInteractionMode() {
+    return _interactionMode;
+}
+
+/**
+ * Cycle qua các interaction modes (text-text → text-voice → voice-text → voice-voice → text-text).
+ * Bỏ qua các mode không được hỗ trợ (thiếu STT hoặc TTS).
+ */
+function cycleInteractionMode() {
+    var modes = ['text-text', 'text-voice', 'voice-text', 'voice-voice'];
+    var currentIndex = modes.indexOf(_interactionMode);
+    
+    // Kiểm tra voice support
+    var voiceSupport = { sttSupported: false, ttsSupported: false };
+    if (typeof initVoiceAdapter === 'function') {
+        voiceSupport = initVoiceAdapter();
+    }
+    
+    // Tìm mode tiếp theo được hỗ trợ
+    var nextIndex = (currentIndex + 1) % modes.length;
+    var attempts = 0;
+    
+    while (attempts < modes.length) {
+        var nextMode = modes[nextIndex];
+        var needsSTT = nextMode.startsWith('voice-');
+        var needsTTS = nextMode.endsWith('-voice');
+        
+        // Kiểm tra xem mode này có được hỗ trợ không
+        if ((!needsSTT || voiceSupport.sttSupported) && (!needsTTS || voiceSupport.ttsSupported)) {
+            console.log('[cycleInteractionMode] Switching from', _interactionMode, 'to', nextMode);
+            setInteractionMode(nextMode);
+            return;
+        }
+        
+        // Thử mode tiếp theo
+        nextIndex = (nextIndex + 1) % modes.length;
+        attempts++;
+    }
+    
+    // Nếu không tìm được mode nào khác, giữ nguyên
+    console.warn('[cycleInteractionMode] No other supported modes found, staying at', _interactionMode);
+}
+
+/**
+ * Kiểm tra voice input có được bật không.
+ * @returns {boolean}
+ */
+function isVoiceInputEnabled() {
+    return _interactionMode.startsWith('voice-');
+}
+
+/**
+ * Kiểm tra voice output có được bật không.
+ * @returns {boolean}
+ */
+function isVoiceOutputEnabled() {
+    return _interactionMode.endsWith('-voice');
+}
+
+/**
+ * Đặt chế độ tương tác, cập nhật UI.
+ * @param {string} mode - 'text-text' | 'text-voice' | 'voice-text' | 'voice-voice'
+ */
+function setInteractionMode(mode) {
+    console.log('[setInteractionMode] Setting mode to:', mode);
+    _interactionMode = mode;
+    try { localStorage.setItem('hikari_interaction_mode', mode); } catch (e) {}
+
+    // Hiện/ẩn nút microphone
+    var micBtn = document.getElementById('voice-input-button');
+    if (micBtn) {
+        var shouldShow = isVoiceInputEnabled();
+        console.log('[setInteractionMode] Voice input enabled:', shouldShow);
+        micBtn.classList.toggle('hidden', !shouldShow);
+    } else {
+        console.warn('[setInteractionMode] voice-input-button not found');
+    }
+
+    // Cập nhật badge
+    var badge = document.getElementById('interaction-mode-badge');
+    if (badge) {
+        var badges = {
+            'text-text': '📝→📝',
+            'text-voice': '📝→🔊',
+            'voice-text': '🎤→📝',
+            'voice-voice': '🎤→🔊'
+        };
+        badge.textContent = badges[mode] || '📝→📝';
+        badge.title = mode;
+        console.log('[setInteractionMode] Badge updated to:', badge.textContent);
+    } else {
+        console.warn('[setInteractionMode] interaction-mode-badge not found');
+    }
+
+    // Sync select nếu có
+    var modeSelect = document.getElementById('interaction-mode-select');
+    if (modeSelect && modeSelect.value !== mode) {
+        modeSelect.value = mode;
+        console.log('[setInteractionMode] Select synced to:', mode);
+    }
+    
+    console.log('[setInteractionMode] Mode set successfully. Voice input enabled:', isVoiceInputEnabled(), 'Voice output enabled:', isVoiceOutputEnabled());
+}
+
+/**
+ * Đọc text bằng TTS nếu voice output đang bật.
+ * Gọi thẳng speakText từ voice-adapter.js (đã load qua script tag).
+ * @param {string} text
+ */
+function onBotReplyReady(text) {
+    if (!isVoiceOutputEnabled()) return;
+    // speakText được định nghĩa trong voice-adapter.js — không wrap lại để tránh đệ quy
+    if (typeof speakText === 'function') {
+        speakText(text, currentLang, _selectedVoiceName);
+    }
+}
+
+/**
+ * Dừng TTS — delegate sang voice-adapter.js.
+ */
+function stopSpeaking() {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+}
+
+/**
+ * Cập nhật dropdown chọn voice theo ngôn ngữ.
+ * @param {string} lang
+ */
+function updateVoiceSelector(lang) {
+    var select = document.getElementById('tts-voice-select');
+    if (!select) return;
+
+    var voices = (typeof getVoicesForLang === 'function') ? getVoicesForLang(lang) : [];
+    select.innerHTML = '';
+
+    if (voices.length === 0) {
+        var opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = lang === 'en' ? '(No voices available)' : lang === 'ja' ? '(音声なし)' : '(Không có giọng)';
+        select.appendChild(opt);
+        return;
+    }
+
+    voices.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = v.name + (v.localService ? ' ★' : '');
+        select.appendChild(opt);
+    });
+
+    // Chọn default voice
+    var defaultVoice = (typeof getDefaultVoice === 'function') ? getDefaultVoice(lang) : null;
+    if (defaultVoice) {
+        select.value = defaultVoice.name;
+        _selectedVoiceName = defaultVoice.name;
+    }
+}
+
+/**
+ * Bắt đầu nhận diện giọng nói.
+ * Dừng TTS trước để tránh feedback loop (voice→voice mode).
+ */
+function startVoiceInput() {
+    // Dừng TTS trước (tránh feedback loop trong voice→voice)
+    stopSpeaking();
+
+    var micBtn = document.getElementById('voice-input-button');
+    var msgInput = document.getElementById('message-input');
+    var prevPlaceholder = msgInput ? msgInput.placeholder : '';
+
+    if (micBtn) micBtn.classList.add('voice-listening');
+
+    if (typeof window !== 'undefined' && typeof window._voiceAdapterStartVoiceInput === 'function') {
+        window._voiceAdapterStartVoiceInput(
+            currentLang,
+            // onInterim: hiển thị trạng thái vào placeholder (không ghi đè text đang nhập)
+            function (statusText) {
+                if (msgInput) {
+                    msgInput.placeholder = statusText;
+                    msgInput.disabled = true;
+                }
+            },
+            // onFinal: điền kết quả và gửi
+            function (text) {
+                if (micBtn) micBtn.classList.remove('voice-listening');
+                if (msgInput) {
+                    msgInput.disabled = false;
+                    msgInput.placeholder = prevPlaceholder;
+                    msgInput.value = text;
+                }
+                sendMessage();
+            },
+            // onError
+            function (err) {
+                if (micBtn) micBtn.classList.remove('voice-listening');
+                if (msgInput) {
+                    msgInput.disabled = false;
+                    msgInput.placeholder = prevPlaceholder;
+                }
+                console.warn('STT error:', err);
+
+                var lang = currentLang || 'vi';
+                if (err === 'no-speech') return; // không cần thông báo
+
+                var msg;
+                if (err === 'not-allowed') {
+                    msg = lang === 'en' ? '🎤 Microphone access denied. Please allow microphone in browser settings.'
+                        : lang === 'ja' ? '🎤 マイクへのアクセスが拒否されました。'
+                        : '🎤 Trình duyệt chặn microphone. Vui lòng cấp quyền microphone.';
+                } else if (err && err.startsWith('transcribe-failed')) {
+                    msg = lang === 'en' ? '🎤 Transcription failed. Try again.'
+                        : lang === 'ja' ? '🎤 音声認識に失敗しました。'
+                        : '🎤 Nhận dạng giọng nói thất bại. Thử lại nhé!';
+                } else {
+                    msg = lang === 'en' ? '🎤 Voice input error: ' + err
+                        : lang === 'ja' ? '🎤 音声入力エラー: ' + err
+                        : '🎤 Lỗi voice input: ' + err;
+                }
+                showError(msg);
+            }
+        );
+    } else {
+        if (micBtn) micBtn.classList.remove('voice-listening');
+        if (msgInput) { msgInput.disabled = false; msgInput.placeholder = prevPlaceholder; }
+        console.warn('[startVoiceInput] voice-adapter chưa được load');
+    }
+}
+
+/**
+ * Dừng nhận diện giọng nói.
+ */
+function stopVoiceInput() {
+    var micBtn = document.getElementById('voice-input-button');
+    if (micBtn) micBtn.classList.remove('voice-listening');
+    if (typeof window !== 'undefined' && typeof window._voiceAdapterStopVoiceInput === 'function') {
+        window._voiceAdapterStopVoiceInput();
     }
 }
 
@@ -2076,6 +2807,19 @@ if (typeof module !== 'undefined' && module.exports) {
         USERNAME: USERNAME,
         FALLBACK_API_URL: FALLBACK_API_URL,
         FALLBACK_API_TIMEOUT: FALLBACK_API_TIMEOUT,
-        LLM_MODEL_ID_CONFIG: LLM_MODEL_ID_CONFIG
+        LLM_MODEL_ID_CONFIG: LLM_MODEL_ID_CONFIG,
+        // Voice + Interaction Mode
+        getInteractionMode: getInteractionMode,
+        setInteractionMode: setInteractionMode,
+        cycleInteractionMode: cycleInteractionMode,
+        isVoiceInputEnabled: isVoiceInputEnabled,
+        isVoiceOutputEnabled: isVoiceOutputEnabled,
+        onBotReplyReady: onBotReplyReady,
+        stopSpeaking: stopSpeaking,
+        startVoiceInput: startVoiceInput,
+        stopVoiceInput: stopVoiceInput,
+        updateVoiceSelector: updateVoiceSelector,
+        get _interactionMode() { return _interactionMode; },
+        get _selectedVoiceName() { return _selectedVoiceName; }
     };
 }

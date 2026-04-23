@@ -8,6 +8,8 @@ Dữ liệu hội thoại (Brain Data) được lưu trong các tệp `.rive` ri
 
 Ứng dụng còn tích hợp tìm kiếm web (Web Search Adapter) qua DuckDuckGo Instant Answer API, hệ thống tiền xử lý dữ liệu (Preprocessed Data Pipeline) để tối ưu hóa so khớp văn bản, thuật toán tương đồng nâng cao (Cosine Similarity + Synset Similarity), hiển thị thời gian xử lý (Response Time), và chuyển đổi URL thành liên kết nhấp được (URL Linkification).
 
+Phiên bản hiện tại bổ sung thêm: cơ chế giới hạn lưu trữ lịch sử chat trong IndexedDB (Retention Policy — giới hạn theo số lượng hoặc thời gian), và khả năng bật/tắt từng adapter trong Object Macros Panel với danh sách adapter được đọc động từ `data/adapter-registry.json`.
+
 ## Thuật ngữ
 
 - **Hikari_Chatbot**: Ứng dụng chatbot tĩnh trên web, sử dụng RiveScript làm engine xử lý hội thoại
@@ -45,6 +47,9 @@ Dữ liệu hội thoại (Brain Data) được lưu trong các tệp `.rive` ri
 - **Synset_Similarity**: Thuật toán tương đồng dựa trên nhóm từ đồng nghĩa (SYNONYM_GROUPS), nhận diện từ có nghĩa tương tự qua 3 ngôn ngữ
 - **Response_Time_Display**: Hiển thị thời gian xử lý (ms) cho mỗi phản hồi của bot, dưới dạng "⏱ Xms"
 - **URL_Linkification**: Chuyển đổi URL trong tin nhắn bot thành thẻ `<a>` nhấp được, với HTML escape và newline conversion
+- **Retention_Policy**: Cơ chế giới hạn lưu trữ lịch sử chat trong IndexedDB, gồm 2 chế độ: giới hạn số lượng tin nhắn (count) hoặc giới hạn thời gian lưu trữ (days)
+- **Adapter_Prefix_Command**: Cú pháp lệnh đặc biệt dạng `/[key_adapter] [nội dung]` cho phép người dùng chỉ định trực tiếp adapter nào sẽ xử lý tin nhắn, bỏ qua toàn bộ fallback chain thông thường. Ví dụ: `/best_match xin chào`, `/mathematical_evaluation 2 + 3`
+- **Retention_Mode**: Chế độ retention đang áp dụng — `"count"` (giới hạn số lượng N hội thoại) hoặc `"days"` (giới hạn M ngày lưu trữ)
 
 ## Yêu cầu
 
@@ -658,3 +663,56 @@ Dữ liệu hội thoại (Brain Data) được lưu trong các tệp `.rive` ri
 8. IF một chế độ yêu cầu API không được hỗ trợ (SpeechRecognition hoặc SpeechSynthesis), THEN THE chế độ đó SHALL bị vô hiệu hóa trong bộ chọn với tooltip giải thích lý do
 9. WHEN Interaction_Mode là "Voice → Voice", THE Hikari_Chatbot SHALL dừng TTS đang phát (`stopSpeaking()`) trước khi bắt đầu lắng nghe STT để tránh feedback loop
 10. THE Chat_Interface SHALL hiển thị badge/indicator nhỏ cho biết chế độ hiện tại (ví dụ: 🎤→📝, 📝→🔊, 🎤→🔊, 📝→📝)
+
+### Yêu cầu 42: Chat History Retention — Cơ chế giới hạn lưu trữ IndexedDB
+
+**User Story:** Là một người dùng, tôi muốn có thể cấu hình giới hạn lưu trữ lịch sử chat trong IndexedDB, để tránh tích lũy dữ liệu vô hạn và kiểm soát dung lượng lưu trữ trên thiết bị của mình.
+
+#### Tiêu chí chấp nhận
+
+1. THE Hikari_Chatbot SHALL hỗ trợ 2 cơ chế retention cho IndexedDB, người dùng chọn một trong hai qua Settings Panel:
+   - **Cơ chế 1 — Giới hạn số lượng hội thoại**: lưu tối đa N hội thoại (mặc định 50), xóa hội thoại cũ nhất khi vượt quá N (FIFO)
+   - **Cơ chế 2 — Giới hạn thời gian lưu trữ**: lưu tối đa M ngày (mặc định 30 ngày), tự động xóa tin nhắn cũ hơn M ngày
+2. THE Settings Panel SHALL bao gồm bộ chọn cơ chế retention (`#retention-mode-select`) với 2 tùy chọn: "Giới hạn số lượng" và "Giới hạn thời gian"
+3. WHEN cơ chế 1 được chọn, THE Settings Panel SHALL hiển thị input số `#retention-max-count` (mặc định 50) để người dùng cấu hình số lượng hội thoại tối đa N
+4. WHEN cơ chế 2 được chọn, THE Settings Panel SHALL hiển thị input số `#retention-max-days` (mặc định 30) để người dùng cấu hình số ngày tối đa M
+5. WHEN cơ chế 1 đang áp dụng và số lượng tin nhắn trong IndexedDB vượt quá N, THE `data/chat-history-db.js` SHALL tự động xóa các tin nhắn cũ nhất (theo timestamp tăng dần) cho đến khi còn đúng N tin nhắn
+6. WHEN cơ chế 2 đang áp dụng, THE `data/chat-history-db.js` SHALL tự động xóa tất cả tin nhắn có `timestamp` cũ hơn M ngày tính từ thời điểm hiện tại
+7. THE `data/chat-history-db.js` SHALL cung cấp hàm `applyRetentionPolicy(mode, value)` để áp dụng cơ chế retention: `mode` là `"count"` hoặc `"days"`, `value` là N hoặc M tương ứng
+8. THE `applyRetentionPolicy()` SHALL được gọi tự động sau mỗi lần `saveChatMessage()` thành công để đảm bảo giới hạn luôn được tuân thủ
+9. THE Hikari_Chatbot SHALL lưu cấu hình retention (mode và value) vào `localStorage` để giữ nguyên sau khi tải lại trang
+10. WHEN người dùng thay đổi cơ chế hoặc giá trị retention trong Settings Panel, THE Hikari_Chatbot SHALL áp dụng ngay lập tức bằng cách gọi `applyRetentionPolicy()` với cấu hình mới
+
+### Yêu cầu 43: Object Macros Panel — Enable/Disable Adapter
+
+**User Story:** Là một người dùng, tôi muốn có thể bật/tắt từng adapter trong Object Macros Panel, để kiểm soát những adapter nào được sử dụng trong quá trình xử lý tin nhắn.
+
+#### Tiêu chí chấp nhận
+
+1. THE Object_Macro_List SHALL đọc danh sách adapter động từ `data/adapter-registry.json` thay vì hard-code, để phản ánh đúng các adapter hiện có
+2. WHEN hiển thị Object_Macro_List, THE Chat_Interface SHALL render một toggle (checkbox hoặc switch) bên cạnh mỗi adapter để người dùng bật/tắt
+3. THE toggle SHALL phản ánh trạng thái `active` hiện tại của adapter từ `data/adapter-registry.json`
+4. WHEN người dùng toggle một adapter, THE Hikari_Chatbot SHALL cập nhật field `active` tương ứng trong `ADAPTER_REGISTRY` (biến toàn cục trong bộ nhớ) và lưu thay đổi vào `data/adapter-registry.json` qua cơ chế lưu trữ phù hợp (localStorage fallback nếu không thể ghi file trực tiếp)
+5. WHEN một adapter có `active: false`, THE Logic_Adapter_Dispatcher SHALL bỏ qua adapter đó trong quá trình điều phối, không gọi adapter đó khi xử lý tin nhắn
+6. THE `voice-adapter` SHALL luôn được giữ ở trạng thái enabled và KHÔNG hiển thị toggle disable cho adapter này (ngoại lệ bắt buộc)
+7. WHEN adapter bị disabled, THE Object_Macro_List SHALL hiển thị adapter đó với style mờ (opacity thấp hơn) để phân biệt trực quan với adapter đang enabled
+8. THE Hikari_Chatbot SHALL cung cấp hàm `setAdapterActive(adapterKey, isActive)` để cập nhật trạng thái active của một adapter trong `ADAPTER_REGISTRY`
+9. WHEN `initBot()` được gọi, THE Hikari_Chatbot SHALL chỉ đăng ký các adapter có `active: true` vào RiveScript_Engine qua `bot.setSubroutine()`, bỏ qua adapter có `active: false`
+10. THE trạng thái enable/disable của các adapter SHALL được lưu persistent vào `localStorage` (key: `hikari_adapter_states`) để giữ nguyên sau khi tải lại trang
+
+### Yêu cầu 44: Chỉ định Adapter bằng Prefix Command
+
+**User Story:** Là một người dùng, tôi muốn có thể chỉ định trực tiếp adapter nào sẽ xử lý tin nhắn bằng cách gõ `/[key_adapter] [nội dung]` trong ô nhập liệu, để kiểm soát chính xác luồng xử lý mà không phụ thuộc vào fallback chain tự động.
+
+#### Tiêu chí chấp nhận
+
+1. WHEN người dùng gõ `/[key] [nội dung]` trong Message_Input và `key` khớp với một adapter có trong `ADAPTER_REGISTRY` với `active: true`, THE Hikari_Chatbot SHALL nhận diện đây là một Adapter_Prefix_Command hợp lệ
+2. WHEN một Adapter_Prefix_Command hợp lệ được nhận diện trong Message_Input, THE Chat_Interface SHALL hiển thị visual feedback (badge hoặc chip phía trên Message_Input) thông báo adapter đã được chọn, ví dụ: "🔧 Best Match"
+3. WHEN người dùng gửi một Adapter_Prefix_Command hợp lệ, THE Hikari_Chatbot SHALL gọi trực tiếp adapter được chỉ định với phần nội dung sau `/[key] ` (bỏ qua toàn bộ fallback chain: RiveScript, bestMatch, API, LLM)
+4. WHEN người dùng gõ `/[key]` mà `key` không khớp với bất kỳ adapter nào trong `ADAPTER_REGISTRY` hoặc adapter đó có `active: false`, THE Chat_Interface SHALL KHÔNG hiển thị visual feedback và SHALL xử lý tin nhắn theo luồng thông thường
+5. WHEN người dùng gửi Adapter_Prefix_Command mà không có nội dung sau prefix (ví dụ: chỉ gõ `/best_match` không có text tiếp theo), THE Hikari_Chatbot SHALL hiển thị thông báo yêu cầu nhập nội dung thay vì gọi adapter
+6. THE Adapter_Prefix_Command SHALL chỉ áp dụng cho các adapter nhận text input trực tiếp; `voice-adapter` SHALL bị loại trừ khỏi danh sách key hợp lệ cho Adapter_Prefix_Command
+7. WHEN người dùng đang gõ và phần đầu input khớp với `/[valid_key]`, THE Chat_Interface SHALL cập nhật visual feedback theo thời gian thực (real-time) mà không cần người dùng nhấn gửi
+8. WHEN visual feedback Adapter_Prefix_Command đang hiển thị và người dùng xóa prefix khỏi input, THE Chat_Interface SHALL ẩn badge/chip và trở về trạng thái bình thường
+9. THE Hikari_Chatbot SHALL cung cấp hàm `parseAdapterPrefixCommand(input)` trả về `{ adapterKey, content }` nếu input là Adapter_Prefix_Command hợp lệ, hoặc `null` nếu không hợp lệ
+10. WHEN adapter được chỉ định qua Adapter_Prefix_Command trả về kết quả, THE Adapter_Path breadcrumb SHALL hiển thị tên adapter đó kèm ký hiệu chỉ định trực tiếp (ví dụ: "📌 Best Match") để phân biệt với luồng fallback thông thường
