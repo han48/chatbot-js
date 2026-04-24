@@ -1,11 +1,15 @@
 // ============================================================
-// Voice Adapter — STT (Whisper ONNX via Transformers.js) + TTS (Web Speech API)
+// Voice Adapter — STT (Whisper ONNX via Transformers.js) + TTS (MMS-TTS via Transformers.js)
 // STT: chạy offline trong browser, không cần server
-// TTS: Web Speech API native
+// TTS: MMS-TTS (Xenova) - hỗ trợ en, vi; fallback Web Speech API cho ja
 // ============================================================
 
-// Import language selector (nếu chạy trên browser, sẽ được load từ HTML)
-// Nếu chạy trên Node/test, sẽ được stub ở cuối file
+// TTS Model IDs (Xenova ONNX versions)
+var TTS_MODELS = {
+    en: 'Xenova/mms-tts-eng',
+    vi: 'Xenova/mms-tts-vie',
+    ja: null   // Use Web Speech API for Japanese
+};
 
 // === Trạng thái nội bộ ===
 var _isListening = false;      // Đang thu âm
@@ -15,6 +19,10 @@ var _mediaRecorder = null;     // MediaRecorder instance
 var _audioChunks = [];         // Chunks audio thu được
 var _whisperPipeline = null;   // Transformers.js pipeline (lazy load)
 var _whisperLoading = false;   // Đang load model
+var _ttsPipelines = {};        // Cache pipelines per language
+var _ttsModelLoading = {};     // Track loading state per language
+var _isSpeaking = false;
+var _audioContext = null;
 
 // Whisper model — nhỏ, đa ngôn ngữ, chạy được trên browser
 var WHISPER_MODEL_ID = 'onnx-community/whisper-base';
@@ -33,30 +41,128 @@ function initVoiceAdapter() {
     );
     _ttsSupported = !!(
         typeof window !== 'undefined' &&
-        window.speechSynthesis
+        (typeof AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined')
     );
     return { sttSupported: _sttSupported, ttsSupported: _ttsSupported };
 }
 
 // ============================================================
-// TTS — Text to Speech (Web Speech API, giữ nguyên)
+// TTS — Text to Speech (MMS-TTS via Transformers.js + Web Speech API fallback)
 // ============================================================
 
+/**
+ * Lazy-load TTS pipeline cho ngôn ngữ.
+ * @param {string} lang - Language code (en, vi, ja)
+ * @param {function} onStatus - Callback(message) để hiển thị trạng thái loading
+ * @returns {Promise<object>} Transformers.js pipeline hoặc null nếu fallback
+ */
+async function _getTTSPipeline(lang, onStatus) {
+    var langCode = getLLMLang(lang);
+    var modelId = TTS_MODELS[langCode];
+    
+    // Fallback to Web Speech API cho tiếng Nhật
+    if (!modelId) {
+        console.log('[TTS] No model for', langCode, '- using Web Speech API fallback');
+        return null;
+    }
+    
+    if (_ttsPipelines[langCode]) return _ttsPipelines[langCode];
+    if (_ttsModelLoading[langCode]) {
+        // Chờ cho đến khi load xong
+        return new Promise(function (resolve, reject) {
+            var interval = setInterval(function () {
+                if (_ttsPipelines[langCode]) {
+                    clearInterval(interval);
+                    resolve(_ttsPipelines[langCode]);
+                } else if (!_ttsModelLoading[langCode]) {
+                    clearInterval(interval);
+                    reject(new Error('TTS model load failed'));
+                }
+            }, 200);
+        });
+    }
+
+    _ttsModelLoading[langCode] = true;
+    if (onStatus) onStatus('⏳ Đang tải TTS model lần đầu (~100MB)...');
+    console.log('[TTS] Loading model:', modelId);
+
+    try {
+        var transformers = await import(
+            'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3/dist/transformers.min.js'
+        );
+
+        var pipeline = await transformers.pipeline(
+            'text-to-speech',
+            modelId,
+            {
+                dtype: 'fp32',
+                device: 'wasm',
+            }
+        );
+
+        _ttsPipelines[langCode] = pipeline;
+        _ttsModelLoading[langCode] = false;
+        if (onStatus) onStatus('✅ TTS model đã sẵn sàng');
+        console.log('[TTS] Model loaded successfully');
+        return pipeline;
+    } catch (err) {
+        _ttsModelLoading[langCode] = false;
+        console.error('[TTS] Load error:', err);
+        throw err;
+    }
+}
+
+/**
+ * Phát âm thanh từ audio data.
+ * @param {Float32Array} audioData - Audio samples
+ * @param {number} sampleRate - Sample rate (thường 22050 hoặc 24000)
+ */
+function _playAudio(audioData, sampleRate) {
+    if (!_audioContext) {
+        _audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    var audioBuffer = _audioContext.createBuffer(1, audioData.length, sampleRate);
+    var channelData = audioBuffer.getChannelData(0);
+    for (var i = 0; i < audioData.length; i++) {
+        channelData[i] = audioData[i];
+    }
+
+    var source = _audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(_audioContext.destination);
+    source.onended = function () {
+        _isSpeaking = false;
+    };
+    source.start(0);
+    _isSpeaking = true;
+}
+
+/**
+ * Phát âm thanh bằng Web Speech API (fallback cho tiếng Nhật).
+ * @param {string} text - Text to speak
+ * @param {string} lang - Language code
+ */
+function _speakWithWebSpeechAPI(text, lang) {
+    if (!text || !text.trim()) return;
+    
+    try {
+        window.speechSynthesis.cancel();
+        var utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = getLocale(lang);
+        window.speechSynthesis.speak(utterance);
+        _isSpeaking = true;
+    } catch (err) {
+        console.error('[TTS] Web Speech API error:', err);
+    }
+}
+
 function getVoicesForLang(lang) {
-    if (!_ttsSupported) return [];
-    var locale = getLocale(lang);
-    var prefix = locale.split('-')[0].toLowerCase();
-    var all = window.speechSynthesis.getVoices();
-    var filtered = all.filter(function (v) {
-        var vLang = (v.lang || '').toLowerCase();
-        return vLang === locale.toLowerCase() || vLang.startsWith(prefix + '-') || vLang.startsWith(prefix + '_');
-    });
-    filtered.sort(function (a, b) {
-        if (a.localService && !b.localService) return -1;
-        if (!a.localService && b.localService) return 1;
-        return 0;
-    });
-    return filtered;
+    // MMS-TTS hỗ trợ: en, vi
+    // Trả về danh sách "voices" (thực tế chỉ là language codes)
+    var langCode = getLLMLang(lang);
+    var supported = ['en', 'vi'];
+    return supported.includes(langCode) ? [{ name: langCode, lang: lang }] : [];
 }
 
 function getDefaultVoice(lang) {
@@ -64,27 +170,91 @@ function getDefaultVoice(lang) {
     return voices.length > 0 ? voices[0] : null;
 }
 
-function speakText(text, lang, voiceName) {
+async function speakText(text, lang, voiceName) {
     if (!_ttsSupported || !text || !text.trim()) return;
-    window.speechSynthesis.cancel();
-    var utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = getLocale(lang);
-    var voices = getVoicesForLang(lang);
-    var selectedVoice = null;
-    if (voiceName) {
-        selectedVoice = voices.find(function (v) { return v.name === voiceName; }) || null;
+
+    var langCode = getLLMLang(lang);
+    
+    try {
+        // Show TTS status
+        if (typeof showTTSStatus === 'function') {
+            showTTSStatus('⏳ Đang tải model TTS...');
+        }
+        
+        // Thử dùng TTS model
+        var pipeline = await _getTTSPipeline(lang, function (msg) {
+            console.log('[TTS]', msg);
+            if (typeof showTTSStatus === 'function') {
+                showTTSStatus(msg);
+            }
+        });
+
+        if (pipeline) {
+            // TTS - MMS-TTS không cần speaker embeddings
+            if (typeof showTTSStatus === 'function') {
+                showTTSStatus('⏳ Đang tạo âm thanh...');
+            }
+            console.log('[TTS] Generating speech for:', text.substring(0, 50));
+            
+            var result = await pipeline(text);
+
+            // result.audio là Float32Array, result.sampling_rate là sample rate
+            if (result && result.audio) {
+                if (typeof showTTSStatus === 'function') {
+                    showTTSStatus('⏳ Đang phát âm thanh...');
+                }
+                _playAudio(result.audio, result.sampling_rate || 22050);
+                
+                // Hide status sau 1 giây
+                setTimeout(function () {
+                    if (typeof hideTTSStatus === 'function') {
+                        hideTTSStatus();
+                    }
+                }, 1000);
+            }
+        } else {
+            // Fallback to Web Speech API
+            if (typeof showTTSStatus === 'function') {
+                showTTSStatus('⏳ Đang phát âm thanh...');
+            }
+            _speakWithWebSpeechAPI(text, lang);
+            
+            // Hide status sau 1 giây
+            setTimeout(function () {
+                if (typeof hideTTSStatus === 'function') {
+                    hideTTSStatus();
+                }
+            }, 1000);
+        }
+    } catch (err) {
+        console.error('[TTS] Error:', err);
+        if (typeof hideTTSStatus === 'function') {
+            hideTTSStatus();
+        }
+        // Fallback to Web Speech API on error
+        _speakWithWebSpeechAPI(text, lang);
     }
-    if (!selectedVoice) selectedVoice = getDefaultVoice(lang);
-    if (selectedVoice) utterance.voice = selectedVoice;
-    window.speechSynthesis.speak(utterance);
 }
 
 function stopSpeaking() {
-    if (_ttsSupported) window.speechSynthesis.cancel();
+    _isSpeaking = false;
+    
+    // Stop Web Speech API
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+    
+    // Stop Web Audio API
+    if (_audioContext) {
+        try {
+            _audioContext.close();
+        } catch (e) {}
+        _audioContext = null;
+    }
 }
 
 function isSpeaking() {
-    return _ttsSupported && window.speechSynthesis.speaking;
+    return _isSpeaking || (typeof window !== 'undefined' && window.speechSynthesis && window.speechSynthesis.speaking);
 }
 
 // ============================================================

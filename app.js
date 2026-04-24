@@ -733,6 +733,29 @@ function showError(message) {
 }
 
 /**
+ * Hiển thị TTS processing status.
+ * @param {string} message - Status message
+ */
+function showTTSStatus(message) {
+    var ttsStatus = document.getElementById('tts-status');
+    var ttsStatusText = document.getElementById('tts-status-text');
+    if (ttsStatus && ttsStatusText) {
+        ttsStatusText.textContent = message || 'Đang xử lý âm thanh...';
+        ttsStatus.classList.remove('hidden');
+    }
+}
+
+/**
+ * Ẩn TTS processing status.
+ */
+function hideTTSStatus() {
+    var ttsStatus = document.getElementById('tts-status');
+    if (ttsStatus) {
+        ttsStatus.classList.add('hidden');
+    }
+}
+
+/**
  * Tính tỉ lệ khớp (confidence) dựa trên trigger đã match.
  * - Trigger chính xác (không chứa wildcard) → 100
  * - Trigger mặc định `*` → 0
@@ -1101,7 +1124,7 @@ async function sendMessage() {
         return;
     }
 
-    // Hiển thị tin nhắn người dùng (kèm ảnh nếu có)
+    // Hiển thị tin nhắn người dùng NGAY LẬP TỨC (kèm ảnh nếu có)
     appendMessage(text || '', 'user', undefined, undefined, undefined, attachment ? attachment.dataURL : undefined);
 
     // Lưu user message vào history (nếu có ảnh mà không có text, ghi chú [image])
