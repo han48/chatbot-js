@@ -4,21 +4,8 @@
 // TTS: Web Speech API native
 // ============================================================
 
-/**
- * Ánh xạ ngôn ngữ app → locale / Whisper language code.
- */
-var SPEECH_LOCALE_MAP = {
-    vi: 'vi-VN',
-    en: 'en-US',
-    ja: 'ja-JP'
-};
-
-// Whisper language codes (ISO 639-1)
-var WHISPER_LANG_MAP = {
-    vi: 'vietnamese',
-    en: 'english',
-    ja: 'japanese'
-};
+// Import language selector (nếu chạy trên browser, sẽ được load từ HTML)
+// Nếu chạy trên Node/test, sẽ được stub ở cuối file
 
 // === Trạng thái nội bộ ===
 var _isListening = false;      // Đang thu âm
@@ -57,7 +44,7 @@ function initVoiceAdapter() {
 
 function getVoicesForLang(lang) {
     if (!_ttsSupported) return [];
-    var locale = SPEECH_LOCALE_MAP[lang] || lang;
+    var locale = getLocale(lang);
     var prefix = locale.split('-')[0].toLowerCase();
     var all = window.speechSynthesis.getVoices();
     var filtered = all.filter(function (v) {
@@ -81,7 +68,7 @@ function speakText(text, lang, voiceName) {
     if (!_ttsSupported || !text || !text.trim()) return;
     window.speechSynthesis.cancel();
     var utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = SPEECH_LOCALE_MAP[lang] || lang;
+    utterance.lang = getLocale(lang);
     var voices = getVoicesForLang(lang);
     var selectedVoice = null;
     if (voiceName) {
@@ -265,7 +252,7 @@ async function startVoiceInput(lang, onInterim, onFinal, onError) {
                 });
 
                 var audioData = await _decodeAudioBlob(audioBlob);
-                var whisperLang = WHISPER_LANG_MAP[lang] || 'vietnamese';
+                var whisperLang = getWhisperLang(lang);
 
                 var result = await pipeline(audioData, {
                     language: whisperLang,
@@ -337,7 +324,6 @@ if (typeof window !== 'undefined') {
 // Export cho Node/test (stub functions)
 // ============================================================
 if (typeof module !== 'undefined' && module.exports) {
-    globalThis.SPEECH_LOCALE_MAP = SPEECH_LOCALE_MAP;
     globalThis.initVoiceAdapter = function () { return { sttSupported: false, ttsSupported: false }; };
     globalThis.getVoicesForLang = function () { return []; };
     globalThis.getDefaultVoice = function () { return null; };

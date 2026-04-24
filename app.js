@@ -871,6 +871,12 @@ async function initBot(lang) {
  */
 async function changeLanguage(lang) {
     currentLang = lang;
+    
+    // Notify language selector
+    if (typeof onLanguageChange === 'function') {
+        onLanguageChange(lang);
+    }
+    
     await initBot(lang);
 
     // Xóa lịch sử hội thoại
@@ -1997,16 +2003,27 @@ async function initializeApp() {
         await loadPreprocessedData();
     }
 
-    // Khởi tạo bot với tiếng Việt (ngôn ngữ mặc định)
-    await initBot('vi');
+    // Lấy ngôn ngữ từ localStorage, nếu không có thì dùng mặc định
+    var savedLang = (typeof getLanguageFromStorage === 'function') ? getLanguageFromStorage() : null;
+    var initialLang = (savedLang && (typeof isLanguageSupported === 'function' ? isLanguageSupported(savedLang) : true)) ? savedLang : 'vi';
+    currentLang = initialLang;
+
+    // Cập nhật language selector UI
+    var langSelector = document.getElementById('language-selector');
+    if (langSelector) {
+        langSelector.value = initialLang;
+    }
+
+    // Khởi tạo bot với ngôn ngữ đã lưu
+    await initBot(initialLang);
 
     // Hiển thị lời chào khởi tạo
     if (bot) {
-        var greeting = await bot.reply(USERNAME, GREETING_TRIGGERS['vi']);
+        var greeting = await bot.reply(USERNAME, GREETING_TRIGGERS[initialLang]);
         _skipHistoryOnce = true;
         appendMessage(greeting, 'bot');
-        updateRulesList('vi');
-        updateMacrosList('vi');
+        updateRulesList(initialLang);
+        updateMacrosList(initialLang);
     }
 
     // Load 10 messages gần nhất từ IndexedDB
